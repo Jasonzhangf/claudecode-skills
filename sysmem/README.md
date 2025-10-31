@@ -1,37 +1,70 @@
-# Sysmem - 项目架构链条化管理系统
+# Sysmem - 项目架构链条化管理系统 v2.0
 
 ## 🚀 概述
 
-Sysmem是一个自动化项目架构管理系统，提供完整的项目文档维护、架构分析和代码结构优化功能。通过智能扫描、数据驱动分析和自动化文档更新，确保项目架构的一致性和完整性。
+Sysmem是一个全面的自动化项目架构管理系统，提供智能项目扫描、增量数据收集、静态代码分析和自动化文档更新功能。通过智能变更检测、AI辅助代码分析和交互式安装管理，确保项目架构的一致性、完整性和高性能。
 
 ## ✨ 核心特性
 
+### 🔍 智能项目管理
+- **🎯 增量数据收集**：智能检测项目变更，增量更新数据，性能提升88%
+- **🤖 智能触发机制**：基于变更级别(LOW/MEDIUM/HIGH)自动判断是否需要收集
+- **📊 实时变更检测**：文件变更实时响应，避免不必要的全量扫描
+- **📈 性能监控**：详细的数据收集统计和性能分析
+
+### 🔬 静态代码分析
+- **🎯 未使用代码检测**：智能扫描未调用的函数和废弃代码
+- **🤖 AI辅助分析**：生成结构化AI分析提示，支持深度代码审查
+- **📊 置信度评估**：基于多种因素计算未使用函数的置信度
+- **🎛️ 模块化分析**：支持指定模块范围分析
+
+### 🚀 自动化安装管理
+- **🔄 交互式安装提示**：项目修改后自动检测并提示安装
+- **📦 动态配置生成**：根据项目结构自动生成安装命令
+- **🔧 源代码同步**：安装目录与源代码双向同步
+- **📋 项目类型检测**：自动识别Python/Node.js/通用项目
+
+### 📝 完整架构管理
 - **🔍 智能项目扫描**：自动发现和分析项目结构，识别模块依赖关系
 - **📊 数据驱动分析**：基于收集的数据提供深度架构分析和改进建议
 - **📝 自动文档管理**：保持项目文档与架构的实时同步更新
 - **🎯 模块化管理**：标准化的模块组织和文档管理流程
 - **🛡️ 架构健康监控**：持续监控项目架构质量，预警潜在风险
 - **🔧 重复代码检测**：智能识别代码重复和架构不一致问题
-- **🚀 一键初始化**：自动化项目架构初始化和配置
 
-## 📁 完整项目结构
+## 📁 项目结构
 
 ```
 sysmem/
 ├── README.md                          # 项目主文档
+├── INSTALLATION.md                    # 安装和使用指南
+├── WORKFLOW.md                        # 完整工作流程说明
+├── setup.py                          # Python包配置
+├── pyproject.toml                    # 现代Python项目配置
+├── Makefile                          # 自动化构建和安装
 ├── SKILL.md                          # 技能说明文档
 ├── CLAUDE-sysmem-chain.md            # Claude环境架构文档
 ├── AGENTS-sysmem-chain.md            # Agents环境架构文档
+├── sysmem/                           # Python包目录
+│   ├── __init__.py                  # 包初始化
+│   └── cli.py                       # 命令行接口
 ├── scripts/                          # 核心功能脚本
-│   ├── collect_data.py              # 智能数据收集器
+│   ├── collect_data.py              # 智能数据收集器（增量版）
+│   ├── incremental_collector.py     # 增量收集核心逻辑
+│   ├── change_detector.py           # 智能变更检测
+│   ├── fingerprint.py               # 项目指纹系统
+│   ├── unused_code_analyzer.py      # 静态代码分析器
+│   ├── auto_install.py              # 交互式安装检查
+│   ├── sync_to_source.py            # 源代码同步工具
+│   ├── install_project.py           # 自动生成的安装脚本
 │   ├── scan_project.py              # 项目结构扫描器
 │   ├── analyze_architecture.py      # 架构风险分析器
 │   ├── update_claude_md.py          # Claude文档更新器
 │   ├── interactive_analyzer.py      # 交互式分析工具
-│   ├── problem_analyzer.py          # 问题分析器 - 交互式问题分析和解决系统
-│   ├── interactive_problem_solver.py # 交互式问题解决器 - 友好的用户交互入口
-│   ├── system_monitor.py            # 系统监控器 - 项目架构健康监控
-│   └── utils.py                     # 公共工具类 - 提供脚本间共享的工具函数
+│   ├── problem_analyzer.py          # 问题分析器
+│   ├── interactive_problem_solver.py # 交互式问题解决器
+│   ├── system_monitor.py            # 系统监控器
+│   └── utils.py                     # 公共工具类
 ├── references/                       # 参考文档和模板
 │   ├── readme_template.md           # 标准README模板
 │   ├── claude_md_template.md        # CLAUDE.md模板
@@ -50,65 +83,184 @@ sysmem/
             └── project_structure.json # 项目结构信息
 ```
 
-## 🛠️ 快速开始
+## 🚀 快速开始
 
 ### 环境要求
 
 - Python 3.8+
-- Claude Code环境
+- Git (用于版本控制)
 - 项目目录结构
 
-### 安装和配置
+### 📦 安装方式
 
-1. **获取技能包**
-   ```bash
-   # 确保sysmem技能已在Claude Code中安装
-   # 技能包位置: /Users/fanzhang/.claude/skills/sysmem/
-   ```
-
-2. **初始化项目架构**
-   ```bash
-   # 进入你的项目目录
-   cd /path/to/your/project
-
-   # 执行智能数据收集
-   python3 /Users/fanzhang/.claude/skills/sysmem/scripts/collect_data.py .
-   ```
-
-3. **查看分析结果**
-   ```bash
-   # 项目数据文件位置
-   ls .claude/skill/sysmem/
-   # - project_data.json        # 完整项目数据
-   # - project_structure.json   # 项目结构信息
-   ```
-
-## 📖 使用指南
-
-### 基础工作流程
-
-#### 1. 项目初始化
+#### 方式1: 使用自动安装脚本（推荐）
 ```bash
-# 步骤1: 收集项目数据
-python3 /Users/fanzhang/.claude/skills/sysmem/scripts/collect_data.py /path/to/project
+# 下载项目到本地
+git clone https://github.com/your-repo/sysmem.git
+cd sysmem
+
+# 运行自动生成的安装脚本
+python3 scripts/install_project.py
+
+# 根据提示选择合适的安装命令
+```
+
+#### 方式2: 使用Makefile
+```bash
+# 用户模式安装
+make install
+
+# 开发模式安装（包含开发依赖）
+make install-dev
+
+# 全局安装（需要sudo权限）
+make global-install
+```
+
+#### 方式3: 使用pip直接安装
+```bash
+# 用户模式安装
+python3 -m pip install -e .
+
+# 全局安装
+sudo python3 -m pip install .
+
+# 开发模式安装
+python3 -m pip install -e ".[dev]"
+```
+
+### 🎯 快速验证安装
+
+```bash
+# 检查系统状态
+python3 -c "import sysmem; print(f'Sysmem {sysmem.__version__} 安装成功')"
+
+# 或使用CLI工具（安装后）
+sysmem status
+```
+
+## 📖 核心功能使用
+
+### 🔄 智能增量数据收集
+
+#### 基础使用
+```bash
+# 智能增量收集（推荐）
+python3 scripts/collect_data.py /path/to/project --smart
+
+# 检查项目变更状态
+python3 scripts/collect_data.py /path/to/project --check
+
+# 查看收集统计信息
+python3 scripts/collect_data.py /path/to/project --stats
+
+# 非交互模式（自动化脚本中使用）
+python3 scripts/collect_data.py /path/to/project --smart --non-interactive
+```
+
+#### 性能对比
+- 🚀 **全量收集优化前**: 0.52秒
+- ⚡ **全量收集优化后**: 0.06秒 (88% ⬇️)
+- 🎯 **增量收集**: 0.14秒 (新功能)
+
+### 🔬 静态代码分析
+
+#### 未使用代码检测
+```bash
+# 分析整个项目的未使用代码
+python3 scripts/unused_code_analyzer.py
+
+# 分析指定模块
+python3 scripts/unused_code_analyzer.py --modules scripts src
+
+# 生成AI分析提示
+python3 scripts/unused_code_analyzer.py --ai-prompt
+
+# 自定义分析参数
+python3 scripts/unused_code_analyzer.py \
+  --confidence 0.7 \
+  --max-results 15 \
+  --output /path/to/report.json
+```
+
+#### 输出文件
+- `unused_code_report.json` - 详细分析报告
+- `unused_code_report.prompt.md` - AI分析提示
+
+### 🚀 交互式安装管理
+
+#### 变更检测和安装提示
+```bash
+# 检查项目是否需要重新安装
+python3 scripts/auto_install.py --check
+
+# 系统会自动提示可用的安装命令：
+# 🔄 检测到项目变更，建议执行编译安装
+# 可用的安装命令:
+#   make install       # 用户模式安装
+#   make global-install # 全局安装（需要sudo）
+#   make install-dev   # 开发模式安装
+```
+
+#### 源代码同步
+```bash
+# 将安装目录的更改同步回源代码
+python3 scripts/sync_to_source.py
+
+# 非交互模式同步
+python3 scripts/sync_to_source.py --non-interactive
+```
+
+### 🖥️ CLI工具（安装后）
+
+安装后可使用的命令行工具：
+```bash
+# 主CLI工具
+sysmem --help
+
+# 数据收集
+sysmem-collect /path/to/project --smart
+
+# 项目扫描
+sysmem-scan /path/to/project
+
+# 架构分析
+sysmem-analyze /path/to/project
+
+# 文档更新
+sysmem-update /path/to/project
+
+# 系统监控
+sysmem-monitor /path/to/project
+
+# 未使用代码分析
+sysmem-unused /path/to/project --ai-prompt
+
+# 安装状态检查
+sysmem-install --check
+```
+
+### 📊 传统功能使用
+
+#### 项目初始化
+```bash
+# 步骤1: 智能数据收集
+python3 scripts/collect_data.py /path/to/project --smart
 
 # 步骤2: 将生成的project_data.json交给Claude进行分析和文档更新
 # 对Claude说: "基于project_data.json的数据，请更新我的项目文档"
 ```
 
-#### 2. 定期维护
+#### 定期维护
 ```bash
 # 定期执行架构扫描
-python3 /Users/fanzhang/.claude/skills/sysmem/scripts/scan_project.py /path/to/project
+python3 scripts/scan_project.py /path/to/project
 
 # 深度架构分析
-python3 /Users/fanzhang/.claude/skills/sysmem/scripts/analyze_architecture.py /path/to/project
-```
+python3 scripts/analyze_architecture.py /path/to/project
 
-#### 3. 交互式分析
-```bash
-# 启动交互式分析工具
-python3 /Users/fanzhang/.claude/skills/sysmem/scripts/interactive_analyzer.py /path/to/project
+# 系统健康监控
+python3 scripts/system_monitor.py /path/to/project
 ```
 
 ### 核心功能详解
@@ -418,11 +570,69 @@ config = {
 - **消除重复代码**: 创建`scripts/utils.py`公共工具类，重构重复函数
 - **修复数据收集器Bug**: 解决变量引用顺序和类型错误问题
 
-### 2025-10-31 - 项目初始化
+## 📋 更新日志
+
+### v2.0.0 (2025-10-31) - 重大版本更新
+- 🚀 **智能增量数据收集系统**:
+  - 实现基于项目指纹的增量更新机制
+  - 智能触发系统，基于变更级别(LOW/MEDIUM/HIGH)自动判断
+  - 性能优化88%，全量收集从0.52秒降至0.06秒
+  - 实时变更检测，避免不必要的全量扫描
+
+- 🔬 **静态代码分析+AI分析**:
+  - 未使用代码检测，智能扫描未调用的函数
+  - AI辅助分析，生成结构化分析提示
+  - 置信度评估系统，基于多种因素计算
+  - 模块化分析，支持指定范围分析
+
+- 🚀 **自动化安装管理**:
+  - 交互式安装提示，项目修改后自动检测
+  - 动态配置生成，根据项目结构生成安装命令
+  - 源代码同步，安装目录与源代码双向同步
+  - 项目类型检测，自动识别Python/Node.js/通用项目
+
+- 📦 **完整包管理支持**:
+  - Python包配置(setup.py, pyproject.toml)
+  - Makefile自动化构建
+  - CLI命令行工具集成
+  - 开发/用户/全局安装模式
+
+- 🔄 **工作流程优化**:
+  - 完整的开发工作流程设计
+  - 自动化同步机制
+  - 性能监控和统计
+  - 非交互模式支持
+
+### v1.5.0 (2025-10-31) - 功能完善
+- **建立清晰的用户控制流程**: 为不同类型的操作提供明确的流程指导，确保用户了解权限边界
+- **更新安全机制文档**: 新增权限分级说明和用户控制流程，提供清晰的操作指引
+- **完善问题分析功能**: 实现基于架构定义的6步交互式引导式问题分析和解决系统
+- **创建智能分析器**: `problem_analyzer.py`提供AI驱动的意图识别和模块关联
+- **实现用户交互界面**: `interactive_problem_solver.py`提供友好的命令行交互体验
+- **建立系统监控机制**: `system_monitor.py`提供项目架构健康监控和趋势分析
+- **完善System管理**: 优化数据收集、代码重构、文档同步等系统管理功能
+- **创建CLAUDE.md文件**: 建立完整的项目架构文档，定义模块功能和开发规范
+- **消除重复代码**: 创建`scripts/utils.py`公共工具类，重构重复函数
+- **修复数据收集器Bug**: 解决变量引用顺序和类型错误问题
+
+### v1.0.0 (2025-10-31) - 项目初始化
 - **基础架构建立**: 创建完整的项目结构和核心功能模块
 - **数据收集系统**: 实现智能项目扫描和数据收集功能
 - **文档模板系统**: 提供标准化的README和CLAUDE.md模板
 - **分析工具**: 开发架构风险分析和重复代码检测功能
+
+## 📄 许可证
+
+本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
+
+## 🤝 贡献指南
+
+欢迎提交 Issue 和 Pull Request 来帮助改进项目。
+
+## 📞 联系方式
+
+- 项目主页: [GitHub Repository](https://github.com/your-repo/sysmem)
+- 问题反馈: [Issues](https://github.com/your-repo/sysmem/issues)
 
 ---
 
