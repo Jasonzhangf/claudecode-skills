@@ -1,0 +1,16 @@
+{
+  "token_limit": 128000,
+  "compression_strategy": {
+    "recent_chapters": 10,
+    "medium_chapters": 40,
+    "token_allocation": {
+      "current_chapter": 40000,
+      "recent_compression": 2000,
+      "medium_compression": 500,
+      "long_term_compression": 100,
+      "settings_data": 30000,
+      "buffer_space": 20000
+    }
+  },
+  "memory_handling": "separate_agent"
+}

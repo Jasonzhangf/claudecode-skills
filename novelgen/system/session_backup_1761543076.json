@@ -1,0 +1,20 @@
+{
+  "session_id": "session_1761543076",
+  "created_at": "2025-10-27T13:31:16.262475",
+  "last_updated": "2025-10-27T13:31:16.262510",
+  "mode": "setting",
+  "current_chapter": 0,
+  "project_path": "/Users/fanzhang/Documents/novel/novelgen",
+  "context_state": {
+    "token_limit": 128000,
+    "compression_enabled": true,
+    "last_compression_chapter": 0
+  },
+  "working_state": {
+    "unsaved_changes": false,
+    "current_section": "beginning",
+    "generation_cache": {}
+  },
+  "navigation_history": [],
+  "error_log": []
+}

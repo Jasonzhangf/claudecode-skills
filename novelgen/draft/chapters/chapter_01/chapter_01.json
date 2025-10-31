@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "chapter": 1,
+    "title": "第一章：开始",
+    "word_count": 44,
+    "status": "created",
+    "created_at": "2025-10-28T11:00:41.896074",
+    "updated_at": "2025-10-28T11:03:22.329519",
+    "version": "1.0"
+  },
+  "content": {
+    "sections": [],
+    "main_content": "故事的开始\n\n\n\n这是新增加的内容。\n\n\n\n这是新增加的内容。\n\n\n\n这是新增加的内容。",
+    "dialogues": [],
+    "descriptions": [],
+    "notes": []
+  },
+  "context": {
+    "previous_chapter_summary": "",
+    "current_chapter_focus": "",
+    "next_chapter_preview": ""
+  },
+  "editing": {
+    "last_modified_by": "system",
+    "edit_history": [
+      {
+        "timestamp": "2025-10-28T11:00:41.959724",
+        "action": "content_update",
+        "word_count": 18,
+        "editor": "system"
+      },
+      {
+        "timestamp": "2025-10-28T11:01:54.284526",
+        "action": "content_update",
+        "word_count": 31,
+        "editor": "system"
+      },
+      {
+        "timestamp": "2025-10-28T11:03:22.297035",
+        "action": "content_update",
+        "word_count": 44,
+        "editor": "system"
+      }
+    ],
+    "word_target": 2000,
+    "progress_percentage": 0
+  }
+}

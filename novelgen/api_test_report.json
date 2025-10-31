@@ -1,0 +1,548 @@
+{
+  "summary": {
+    "total": 23,
+    "passed": 18,
+    "failed": 5,
+    "success_rate": 78.26086956521739
+  },
+  "results": [
+    {
+      "test": "系统状态查询",
+      "success": true,
+      "request": {
+        "action": "system.status"
+      },
+      "response": {
+        "status": "success",
+        "project_path": ".",
+        "directory_structure": {
+          "existing_dirs": [
+            "settings",
+            "settings/worldview",
+            "settings/characters",
+            "settings/environments",
+            "settings/plot",
+            "settings/writing_style",
+            "settings/memory",
+            "draft",
+            "draft/chapters",
+            "manuscript",
+            "system",
+            "progress"
+          ],
+          "missing_dirs": [],
+          "total_dirs": 12
+        },
+        "modules_status": {
+          "worldview": "success",
+          "characters": {
+            "status": "success",
+            "count": 0
+          }
+        },
+        "features_available": [
+          "import_settings_from_directory",
+          "display_settings",
+          "display_memories",
+          "chapter_intelligent_edit",
+          "ai_content_analysis",
+          "memory_management",
+          "chapter_memory_analysis",
+          "auto_memory_generation"
+        ]
+      }
+    },
+    {
+      "test": "扫描目录内容",
+      "success": true,
+      "request": {
+        "action": "import.scan_directory",
+        "target_directory": "test_import_data"
+      },
+      "response": {
+        "status": "success",
+        "target_directory": "test_import_data",
+        "found_files": [
+          {
+            "path": "test_import_data/worldview_test.md",
+            "relative_path": "worldview_test.md",
+            "name": "worldview_test.md",
+            "size": 125,
+            "extension": ".md",
+            "modified_time": 1761620601.942006,
+            "content": "\n# 世界观设定\n\n## 世界名称\n艾泽拉斯世界\n\n## 魔法体系\n- 元素魔法\n- 神圣魔法\n- 暗影魔法\n        "
+          },
+          {
+            "path": "test_import_data/character_test.md",
+            "relative_path": "character_test.md",
+            "name": "character_test.md",
+            "size": 159,
+            "extension": ".md",
+            "modified_time": 1761620601.9419012,
+            "content": "\n# 主角测试\n\n## 基本信息\n- 姓名: 测试主角\n- 年龄: 25\n- 性别: 男\n- 职业: 冒险者\n\n## 性格特点\n勇敢、善良、有正义感\n        "
+          }
+        ],
+        "total_files": 2,
+        "total_size": 284
+      }
+    },
+    {
+      "test": "从目录导入设定",
+      "success": true,
+      "request": {
+        "action": "import.from_directory",
+        "target_directory": "test_import_data"
+      },
+      "response": {
+        "status": "ai_task_required",
+        "ai_task": {
+          "task_type": "content_analysis",
+          "files": [
+            {
+              "path": "worldview_test.md",
+              "name": "worldview_test.md",
+              "content": "\n# 世界观设定\n\n## 世界名称\n艾泽拉斯世界\n\n## 魔法体系\n- 元素魔法\n- 神圣魔法\n- 暗影魔法\n        ",
+              "size": 125
+            },
+            {
+              "path": "character_test.md",
+              "name": "character_test.md",
+              "content": "\n# 主角测试\n\n## 基本信息\n- 姓名: 测试主角\n- 年龄: 25\n- 性别: 男\n- 职业: 冒险者\n\n## 性格特点\n勇敢、善良、有正义感\n        ",
+              "size": 159
+            }
+          ],
+          "specific_setting": null,
+          "supported_settings": [
+            "worldview",
+            "character",
+            "environment",
+            "plot",
+            "style",
+            "memory"
+          ],
+          "analysis_instructions": {
+            "worldview": "识别世界观设定，包括世界名称、时代背景、技术水平、社会结构等",
+            "character": "识别角色信息，包括角色名称、性格、背景、关系等",
+            "environment": "识别环境设定，包括地点、场景、氛围等",
+            "plot": "识别情节元素，包括主线情节、冲突、转折点等",
+            "style": "识别写作风格，包括叙事风格、对话风格、语言特色等",
+            "memory": "识别记忆相关内容，包括角色记忆、情感体验等"
+          }
+        },
+        "local_data": {
+          "files_found": 2,
+          "target_directory": "test_import_data",
+          "total_size": 284
+        }
+      }
+    },
+    {
+      "test": "导入特定设定类型",
+      "success": true,
+      "request": {
+        "action": "import.from_directory",
+        "target_directory": "test_import_data",
+        "specific_setting": "character"
+      },
+      "response": {
+        "status": "ai_task_required",
+        "ai_task": {
+          "task_type": "content_analysis",
+          "files": [
+            {
+              "path": "worldview_test.md",
+              "name": "worldview_test.md",
+              "content": "\n# 世界观设定\n\n## 世界名称\n艾泽拉斯世界\n\n## 魔法体系\n- 元素魔法\n- 神圣魔法\n- 暗影魔法\n        ",
+              "size": 125
+            },
+            {
+              "path": "character_test.md",
+              "name": "character_test.md",
+              "content": "\n# 主角测试\n\n## 基本信息\n- 姓名: 测试主角\n- 年龄: 25\n- 性别: 男\n- 职业: 冒险者\n\n## 性格特点\n勇敢、善良、有正义感\n        ",
+              "size": 159
+            }
+          ],
+          "specific_setting": "character",
+          "supported_settings": [
+            "worldview",
+            "character",
+            "environment",
+            "plot",
+            "style",
+            "memory"
+          ],
+          "analysis_instructions": {
+            "worldview": "识别世界观设定，包括世界名称、时代背景、技术水平、社会结构等",
+            "character": "识别角色信息，包括角色名称、性格、背景、关系等",
+            "environment": "识别环境设定，包括地点、场景、氛围等",
+            "plot": "识别情节元素，包括主线情节、冲突、转折点等",
+            "style": "识别写作风格，包括叙事风格、对话风格、语言特色等",
+            "memory": "识别记忆相关内容，包括角色记忆、情感体验等"
+          }
+        },
+        "local_data": {
+          "files_found": 2,
+          "target_directory": "test_import_data",
+          "total_size": 284
+        }
+      }
+    },
+    {
+      "test": "获取可用设定列表",
+      "success": true,
+      "request": {
+        "action": "display.available_settings"
+      },
+      "response": {
+        "status": "success",
+        "available_settings": {
+          "worldview": true,
+          "characters": {
+            "available": true,
+            "count": 0,
+            "list": []
+          }
+        },
+        "project_path": "."
+      }
+    },
+    {
+      "test": "显示世界观设定",
+      "success": true,
+      "request": {
+        "action": "display.setting",
+        "setting_type": "worldview"
+      },
+      "response": {
+        "status": "success",
+        "setting_type": "worldview",
+        "format": "readable",
+        "content": "# 世界观设定\n\n## 基本信息\n- **世界名称**: 修仙世界\n- **时代背景**: 古代修仙时代\n- **技术水平**: 修仙文明\n- **世界类型**: 东方玄幻\n\n## 地理环境\n广阔的大陆分为东洲、西漠、南疆、北原、中州五大区域。灵气浓度因地而异，中州最为浓郁。\n\n## 社会结构\n宗门林立，家族并存。修仙者地位超然，凡人依附于修仙势力。主要势力有：\n- 正道宗门：注重正统修炼法门\n- 魔道势力：追求速成和力量\n- 散修联盟：独立修士的松散联盟\n\n## 魔法系统\n修仙体系，主要境界：\n- 炼气期：入门境界，分为九层\n- 筑基期：奠定道基，寿元两百\n- 金丹期：凝结金丹，寿元五百\n- 元婴期：修炼元婴，寿元千年\n\n## 历史背景\n上古时代有大能者开辟天地，留下无数传承。千年前发生仙魔大战，各大势力重新洗牌。\n\n## 文化特色\n重视师承，强调道心。修仙者追求长生大道，讲究机缘和悟性。\n\n## 经济体系\n以灵石为主要货币，各种天材地宝交易频繁。拍卖行和商会遍布各大城市。\n\n## 宗教信仰\n崇拜道祖和上古大能，每个宗门都有自己的守护神或信仰体系。\n\n---\n*创建时间: 2025-10-27 13:30:00*\n\n---\n*创建时间: 2025-10-27 13:31:03*\n",
+        "rules_content": "# 世界规则\n\n## 物理法则\n遵循现实世界物理法则\n\n## 魔法规则\n待补充...\n\n## 社会规则\n待补充...\n\n## 特殊限制\n待补充...\n\n## 世界观一致性要求\n待补充...\n\n## 时间流速\n与现实世界相同\n\n## 空间结构\n待补充...\n\n---\n*创建时间: 2025-10-27 13:31:03*\n",
+        "display_title": "世界观设定"
+      }
+    },
+    {
+      "test": "显示角色设定",
+      "success": true,
+      "request": {
+        "action": "display.setting",
+        "setting_type": "character"
+      },
+      "response": {
+        "status": "success",
+        "setting_type": "character_list",
+        "format": "readable",
+        "characters": [],
+        "total_count": 0,
+        "display_title": "角色列表"
+      }
+    },
+    {
+      "test": "显示记忆统计",
+      "success": true,
+      "request": {
+        "action": "display.memory_stats"
+      },
+      "response": {
+        "status": "success",
+        "total_characters": 0,
+        "total_memories": 0,
+        "character_statistics": {}
+      }
+    },
+    {
+      "test": "显示角色记忆",
+      "success": true,
+      "request": {
+        "action": "display.memory",
+        "identifier": "测试主角",
+        "segment_type": "character_all",
+        "display_format": "readable"
+      },
+      "response": {
+        "status": "success",
+        "character": "测试主角",
+        "format": "readable",
+        "content": "暂无记忆记录。",
+        "total_count": 0,
+        "memory_types": [],
+        "display_title": "所有记忆：测试主角"
+      }
+    },
+    {
+      "test": "创建章节",
+      "success": false,
+      "request": {
+        "action": "chapter.create",
+        "chapter_number": 1,
+        "title": "第一章：开始",
+        "context_summary": "故事的开始"
+      },
+      "response": {
+        "status": "error",
+        "message": "第1章已存在"
+      }
+    },
+    {
+      "test": "获取章节内容",
+      "success": true,
+      "request": {
+        "action": "chapter.get_content",
+        "chapter_number": 1
+      },
+      "response": {
+        "status": "success",
+        "chapter": 1,
+        "json_data": {
+          "metadata": {
+            "chapter": 1,
+            "title": "第一章：开始",
+            "word_count": 31,
+            "status": "created",
+            "created_at": "2025-10-28T11:00:41.896074",
+            "updated_at": "2025-10-28T11:01:54.316877",
+            "version": "1.0"
+          },
+          "content": {
+            "sections": [],
+            "main_content": "故事的开始\n\n\n\n这是新增加的内容。\n\n\n\n这是新增加的内容。",
+            "dialogues": [],
+            "descriptions": [],
+            "notes": []
+          },
+          "context": {
+            "previous_chapter_summary": "",
+            "current_chapter_focus": "",
+            "next_chapter_preview": ""
+          },
+          "editing": {
+            "last_modified_by": "system",
+            "edit_history": [
+              {
+                "timestamp": "2025-10-28T11:00:41.959724",
+                "action": "content_update",
+                "word_count": 18,
+                "editor": "system"
+              },
+              {
+                "timestamp": "2025-10-28T11:01:54.284526",
+                "action": "content_update",
+                "word_count": 31,
+                "editor": "system"
+              }
+            ],
+            "word_target": 2000,
+            "progress_percentage": 0
+          }
+        },
+        "json_file": "draft/chapters/chapter_01/chapter_01.json",
+        "md_file": "draft/chapters/chapter_01/chapter_01.md",
+        "md_exists": true
+      }
+    },
+    {
+      "test": "智能编辑章节",
+      "success": true,
+      "request": {
+        "action": "chapter.intelligent_edit",
+        "chapter_number": 1,
+        "edit_request": {
+          "content": "\n\n这是新增加的内容。",
+          "edit_mode": "append",
+          "requires_ai": false
+        }
+      },
+      "response": {
+        "status": "success",
+        "chapter": 1,
+        "word_count": 44,
+        "json_file": "draft/chapters/chapter_01/chapter_01.json",
+        "md_file": "draft/chapters/chapter_01/chapter_01.md",
+        "message": "第1章更新成功"
+      }
+    },
+    {
+      "test": "章节上下文更新",
+      "success": true,
+      "request": {
+        "action": "chapter.context_update",
+        "chapter_number": 1,
+        "context_update": {
+          "summary": "更新后的章节摘要",
+          "key_events": [
+            "主角出发冒险",
+            "遇到第一个伙伴"
+          ]
+        }
+      },
+      "response": {
+        "status": "success",
+        "message": "第1章上下文更新成功",
+        "updated_context": [
+          "summary",
+          "key_events"
+        ],
+        "json_file": "draft/chapters/chapter_01/chapter_01.json",
+        "md_file": "draft/chapters/chapter_01/chapter_01.md"
+      }
+    },
+    {
+      "test": "分析章节记忆",
+      "success": true,
+      "request": {
+        "action": "chapter.analyze_memory",
+        "chapter_number": 1
+      },
+      "response": {
+        "status": "success",
+        "chapter_number": 1,
+        "characters_found": [],
+        "analysis_result": {
+          "character_actions": {},
+          "character_emotions": {},
+          "character_relationships": {},
+          "character_conflicts": {},
+          "character_growth": {},
+          "chapter_events": [],
+          "locations": []
+        },
+        "memory_generation": {
+          "generated_memories": [],
+          "total_generated": 0
+        },
+        "total_memories_generated": 0
+      }
+    },
+    {
+      "test": "应用记忆分析",
+      "success": true,
+      "request": {
+        "action": "chapter.apply_memory",
+        "chapter_number": 1
+      },
+      "response": {
+        "status": "success",
+        "message": "第1章没有生成记忆",
+        "total_memories": 0
+      }
+    },
+    {
+      "test": "获取记忆分析信息",
+      "success": true,
+      "request": {
+        "action": "chapter.memory_info",
+        "chapter_number": 1
+      },
+      "response": {
+        "status": "success",
+        "chapter_number": 1,
+        "analysis_exists": false,
+        "message": "第1章尚未进行记忆分析"
+      }
+    },
+    {
+      "test": "AI内容分析",
+      "success": true,
+      "request": {
+        "action": "ai.analyze_content",
+        "content": "这是一个勇敢的年轻冒险者的故事。",
+        "analysis_type": "character_extraction"
+      },
+      "response": {
+        "status": "ai_task_required",
+        "ai_task": {
+          "task_type": "content_analysis",
+          "files": [
+            {
+              "content": "这是一个勇敢的年轻冒险者的故事。",
+              "name": "direct_content"
+            }
+          ],
+          "analysis_type": "character_extraction"
+        }
+      }
+    },
+    {
+      "test": "AI内容编辑",
+      "success": true,
+      "request": {
+        "action": "ai.edit_content",
+        "content": "简单的描述。",
+        "edit_instructions": "请让这段描述更加生动和详细。"
+      },
+      "response": {
+        "status": "ai_task_required",
+        "ai_task": {
+          "task_type": "content_edit",
+          "existing_content": "简单的描述。",
+          "edit_instructions": "请让这段描述更加生动和详细。",
+          "edit_mode": "improve"
+        }
+      }
+    },
+    {
+      "test": "AI生成摘要",
+      "success": true,
+      "request": {
+        "action": "ai.generate_summary",
+        "content": "长篇内容的详细描述...",
+        "summary_type": "brief"
+      },
+      "response": {
+        "status": "ai_task_required",
+        "ai_task": {
+          "task_type": "generate_summary",
+          "content": "长篇内容的详细描述...",
+          "summary_type": "brief"
+        }
+      }
+    },
+    {
+      "test": "无效操作",
+      "success": false,
+      "request": {
+        "action": "invalid.action"
+      },
+      "response": {
+        "status": "error",
+        "message": "不支持的操作: invalid.action"
+      }
+    },
+    {
+      "test": "缺少参数",
+      "success": false,
+      "request": {
+        "action": "import.from_directory"
+      },
+      "response": {
+        "status": "error",
+        "message": "缺少target_directory参数"
+      }
+    },
+    {
+      "test": "不存在的文件",
+      "success": false,
+      "request": {
+        "action": "import.from_directory",
+        "target_directory": "/nonexistent/path"
+      },
+      "response": {
+        "status": "error",
+        "message": "目标目录不存在: /nonexistent/path"
+      }
+    },
+    {
+      "test": "不存在的章节",
+      "success": false,
+      "request": {
+        "action": "chapter.get_content",
+        "chapter_number": 999
+      },
+      "response": {
+        "status": "error",
+        "message": "第999章不存在"
+      }
+    }
+  ]
+}

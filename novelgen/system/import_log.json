@@ -1,0 +1,42 @@
+{
+  "import_time": "2025-10-27T13:31:03.189126",
+  "project_name": "",
+  "project_path": ".",
+  "log_entries": [
+    {
+      "timestamp": "2025-10-27T13:31:03.187773",
+      "category": "worldview",
+      "action": "import",
+      "status": "success",
+      "details": "世界观更新成功"
+    },
+    {
+      "timestamp": "2025-10-27T13:31:03.188368",
+      "category": "characters",
+      "action": "import",
+      "status": "success",
+      "details": "角色设定导入成功"
+    },
+    {
+      "timestamp": "2025-10-27T13:31:03.188624",
+      "category": "environments",
+      "action": "import",
+      "status": "success",
+      "details": "环境设定导入成功"
+    },
+    {
+      "timestamp": "2025-10-27T13:31:03.188864",
+      "category": "plot",
+      "action": "import",
+      "status": "success",
+      "details": "情节设定导入成功"
+    },
+    {
+      "timestamp": "2025-10-27T13:31:03.189102",
+      "category": "style",
+      "action": "import",
+      "status": "success",
+      "details": "写作风格导入成功"
+    }
+  ]
+}

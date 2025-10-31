@@ -1,0 +1,19 @@
+{
+  "chapters": [
+    {
+      "chapter": 1,
+      "title": "初入青云",
+      "created_at": "2025-10-27T14:20:58.712902",
+      "last_action": "updated",
+      "last_updated": "2025-10-27T15:18:12.798769"
+    },
+    {
+      "chapter": 2,
+      "title": "测试开始",
+      "created_at": "2025-10-27T14:22:02.462764",
+      "last_action": "created",
+      "last_updated": "2025-10-27T15:18:29.083678"
+    }
+  ],
+  "last_updated": "2025-10-27T15:18:29.083681"
+}

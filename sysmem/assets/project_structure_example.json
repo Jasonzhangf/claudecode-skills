@@ -1,0 +1,32 @@
+{
+  "root_path": "/path/to/project",
+  "modules": {
+    "src/core": {
+      "path": "src/core",
+      "readme_file": "README.md",
+      "files": ["base.js", "utils.js", "config.js"],
+      "subdirectories": []
+    },
+    "src/api": {
+      "path": "src/api",
+      "readme_file": "README.md",
+      "files": ["routes.js", "middleware.js", "handlers.js"],
+      "subdirectories": ["v1", "v2"]
+    }
+  },
+  "files": [
+    {
+      "path": "package.json",
+      "module": "root"
+    },
+    {
+      "path": "src/core/base.js",
+      "module": "src/core"
+    }
+  ],
+  "readme_files": {
+    "src/core": "# 核心模块\n\n提供项目的基础功能和工具函数。",
+    "src/api": "# API模块\n\n处理HTTP请求和路由管理。"
+  },
+  "claude_md": "# CLAUDE.md\n\n项目文档..."
+}
