@@ -117,124 +117,6 @@ class ProblemAnalyzer:
         except Exception as e:
             return {"status": "error", "message": f"分析过程出错: {str(e)}"}
 
-    def _interactive_solution_selection(self, options: List[Dict[str, Any]], evidence: Dict[str, Any], context: ProblemContext) -> Optional[Dict[str, Any]]:
-        """交互式解决方案选择流程"""
-        print(f"\n🎯 交互式解决方案选择流程")
-
-        # 显示问题分析摘要
-        print(f"\n📊 问题分析摘要:")
-        print(f"- 问题类型: {context.problem_type.value}")
-        print(f"- 关联模块: {', '.join(context.related_modules) if context.related_modules else '无'}")
-        print(f"- 证据总数: {evidence.get('total_evidence', 0)} 项")
-        print(f"- 高置信度证据: {evidence.get('high_confidence', 0)} 项")
-        print(f"- 相关文件: {len(evidence.get('supporting_files', []))} 个")
-
-        # 显示证据详情
-        print(f"\n🔍 证据详情:")
-        self._display_evidence_summary(evidence)
-
-        # 显示解决方案选项
-        print(f"\n💡 解决方案选项:")
-        for i, option in enumerate(options, 1):
-            print(f"\n{'='*60}")
-            print(f"选项 {i}: {option['title']}")
-            print(f"描述: {option['description']}")
-            print(f"方法: {option['approach']}")
-            print(f"工作量: {option['effort']}")
-            print(f"风险等级: {option['risk']}")
-            print(f"影响模块: {', '.join(option['affected_modules'])}")
-
-            print(f"\n✅ 优势:")
-            for pro in option['pros']:
-                print(f"  • {pro}")
-
-            print(f"\n❌ 劣势:")
-            for con in option['cons']:
-                print(f"  • {con}")
-
-            print(f"\n📋 实施步骤概览:")
-            for j, step in enumerate(option['steps'][:3], 1):
-                print(f"  {j}. {step}")
-            if len(option['steps']) > 3:
-                print(f"  ... 共{len(option['steps'])}个步骤")
-
-        # 用户交互选择
-        while True:
-            try:
-                print(f"\n{'='*60}")
-                choice = input(f"\n请选择操作:\n1. 选择解决方案选项 (1-{len(options)})\n2. 查看详细证据信息\n3. 查看架构约束\n4. 完成分析\n\n请输入选择 (1-4): ").strip()
-
-                if choice == '1':
-                    return self._select_solution_option(options)
-                elif choice == '2':
-                    self._show_detailed_evidence(evidence)
-                elif choice == '3':
-                    self._show_architecture_constraints(context)
-                elif choice == '4':
-                    return None
-                else:
-                    print("请输入有效选项 (1-4)")
-
-            except ValueError:
-                print("请输入有效数字")
-
-    def _select_solution_option(self, options: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-        """选择具体解决方案选项"""
-        while True:
-            try:
-                choice = input(f"\n选择解决方案选项 (1-{len(options)}) 或 'back' 返回: ").strip()
-
-                if choice.lower() == 'back':
-                    return None
-
-                choice_idx = int(choice) - 1
-                if 0 <= choice_idx < len(options):
-                    selected = options[choice_idx]
-
-                    print(f"\n✅ 已选择: {selected['title']}")
-                    print(f"方法: {selected['approach']}")
-                    print(f"工作量: {selected['effort']}")
-                    print(f"风险等级: {selected['risk']}")
-
-                    confirm = input("\n确认此选择? (y/n): ").strip().lower()
-                    if confirm == 'y':
-                        return selected
-
-            except ValueError:
-                print("请输入有效数字或 'back'")
-
-    def _display_evidence_summary(self, evidence: Dict[str, Any]):
-        """显示证据摘要"""
-        print(f"- 总证据数: {evidence.get('total_evidence', 0)} 项")
-        print(f"- 高置信度: {evidence.get('high_confidence', 0)} 项")
-        print(f"- 中等置信度: {evidence.get('medium_confidence', 0)} 项")
-        print(f"- 低置信度: {evidence.get('low_confidence', 0)} 项")
-        print(f"- 相关文件: {len(evidence.get('supporting_files', []))} 个")
-
-        if evidence.get('supporting_files'):
-            print("\n📁 主要相关文件:")
-            for file in evidence['supporting_files'][:5]:  # 只显示前5个
-                print(f"  • {file}")
-            if len(evidence['supporting_files']) > 5:
-                print(f"  ... 还有{len(evidence['supporting_files'])-5}个文件")
-
-    def _show_architecture_constraints(self, context: ProblemContext):
-        """显示架构约束信息"""
-        validation = context.architecture_constraints
-        print(f"架构合规性: {'✅ 符合' if validation.get('compliant', False) else '❌ 可能违反'}")
-
-        if not validation.get('compliant', True):
-            print("违规项:")
-            for violation in validation.get('violations', []):
-                print(f"  • {violation}")
-
-        print(f"模块定义约束:")
-        for module in context.related_modules:
-            module_defs = context.code_analysis.get("module_definitions", {}).get(module, {})
-            ground_truth = module_defs.get("ground_truth", [])
-            if ground_truth:
-                print(f"  {module}: {len(ground_truth)}项定义")
-
     def _generate_analysis_summary(self, context: ProblemContext, evidence: Dict[str, Any], selected_option: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         """生成分析摘要"""
         return {
@@ -253,20 +135,42 @@ class ProblemAnalyzer:
         """步骤1: 分析问题意图和相关模块"""
         print("\n📋 步骤1: 分析问题意图...")
 
-        # 加载项目数据
-        project_data = self._load_project_data()
+        # 加载项目数据并检查新鲜度
+        project_data = self._load_and_validate_project_data()
+        if not project_data:
+            return None
+
+        # 如果需要，执行局部数据更新
+        updated_data = self._check_and_update_data_freshness(user_query, project_data)
+        if updated_data:
+            project_data = updated_data
 
         # AI分析问题类型和相关模块
         problem_type = self._classify_problem_type(user_query)
         related_modules = self._find_related_modules(user_query, project_data)
 
-        # 读取相关模块的README
+        # 读取相关模块的README和Ground Truth
         module_definitions = {}
         for module in related_modules:
             module_readme = self.root_path / module / "README.md"
             if module_readme.exists():
                 content = SysmemUtils.safe_read_file(module_readme)
-                module_definitions[module] = self._extract_module_definitions(content)
+                definitions = self._extract_module_definitions(content)
+                # 更新Ground Truth（如果需要）
+                updated_definitions = self._update_ground_truth_if_needed(module, definitions)
+                module_definitions[module] = updated_definitions
+            else:
+                # 如果没有README，尝试基于代码生成基本的定义
+                print(f"⚠️  模块 '{module}' 没有README文件，尝试基于代码生成定义")
+                basic_definitions = self._generate_ground_truth_for_module(module, module, {})
+                module_definitions[module] = {
+                    "ground_truth": basic_definitions,
+                    "core_functions": [],
+                    "interfaces": [],
+                    "constraints": [],
+                    "capabilities": [],
+                    "limitations": []
+                }
 
         # 代码层面分析
         code_analysis = self._analyze_code_context(user_query, related_modules)
@@ -330,31 +234,151 @@ class ProblemAnalyzer:
         return list(set(related_modules))  # 去重
 
     def _extract_module_definitions(self, readme_content: str) -> Dict[str, Any]:
-        """提取模块定义"""
+        """提取模块定义和Ground Truth"""
         definitions = {
             "core_functions": [],
             "ground_truth": [],
             "interfaces": [],
-            "constraints": []
+            "constraints": [],
+            "capabilities": [],
+            "limitations": []
         }
 
         lines = readme_content.split('\n')
         current_section = None
 
-        for line in lines:
+        for i, line in enumerate(lines):
             line = line.strip()
+            line_lower = line.lower()
 
-            if "核心功能定义" in line or "core functions" in line.lower():
+            # 识别不同的定义部分
+            if "核心功能定义" in line or "core functions" in line_lower:
                 current_section = "core_functions"
-            elif "ground truth" in line.lower() or "重要定义" in line:
+            elif "ground truth" in line_lower or "重要定义" in line_lower or "核心定义" in line_lower:
                 current_section = "ground_truth"
-            elif "接口定义" in line.lower() or "interface" in line.lower():
+            elif "接口定义" in line_lower or "interface" in line_lower:
                 current_section = "interfaces"
-            elif line.startswith('**重要**') or line.startswith('important'):
+            elif "约束" in line_lower or "constraint" in line_lower:
+                current_section = "constraints"
+            elif "功能" in line_lower or "capability" in line_lower or "能做什么" in line_lower:
+                current_section = "capabilities"
+            elif "限制" in line_lower or "limitation" in line_lower or "不能做什么" in line_lower:
+                current_section = "limitations"
+            elif line.startswith('**重要**') or line.startswith('important') or line.startswith('**ground truth**'):
                 if current_section:
-                    definitions[current_section].append(line.replace('**', '').replace('*', '').strip())
+                    # 清理格式，提取核心内容
+                    clean_line = line.replace('**', '').replace('*', '').strip()
+                    if clean_line and len(clean_line) > 5:
+                        # 去掉markdown格式标记
+                        clean_line = re.sub(r'[#*_`]', '', clean_line)
+                        definitions[current_section].append(clean_line)
+
+            # 处理列表项
+            elif line.startswith('-') or line.startswith('*'):
+                if current_section and current_section in ["ground_truth", "capabilities", "limitations"]:
+                    clean_line = line.lstrip('-* ').strip()
+                    if clean_line and len(clean_line) > 5:
+                        definitions[current_section].append(clean_line)
+
+        # 如果没有找到ground truth，尝试智能提取
+        if not definitions["ground_truth"]:
+            definitions["ground_truth"] = self._extract_ground_truth_heuristic(readme_content)
 
         return definitions
+
+    def _extract_ground_truth_heuristic(self, content: str) -> List[str]:
+        """启发式提取Ground Truth定义"""
+        ground_truth = []
+        lines = content.split('\n')
+
+        # 寻找包含关键信息的行
+        gt_patterns = [
+            r'主要功能[:：]',
+            r'核心作用[:：]',
+            r'负责.*：',
+            r'支持.*：',
+            r'用于.*：',
+            r'目标是.*：',
+            r'purpose[:：]',
+            r'responsible for.*：',
+            r'provides.*：'
+        ]
+
+        for line in lines:
+            line = line.strip()
+            if len(line) < 10:
+                continue
+
+            # 检查是否包含Ground Truth模式
+            for pattern in gt_patterns:
+                if re.search(pattern, line, re.IGNORECASE):
+                    clean_line = re.sub(r'[#*_`]', '', line).strip()
+                    if clean_line:
+                        ground_truth.append(clean_line)
+                    break
+
+        # 限制数量，避免太多无关内容
+        return ground_truth[:10] if ground_truth else []
+
+    def _update_ground_truth_if_needed(self, module_path: str, current_definitions: Dict[str, Any]) -> Dict[str, Any]:
+        """根据需要更新Ground Truth"""
+        print(f"🔍 检查模块 '{module_path}' 的Ground Truth...")
+
+        # 检查是否缺少关键的Ground Truth定义
+        current_gt = current_definitions.get("ground_truth", [])
+
+        # 基于模块功能智能生成Ground Truth
+        if len(current_gt) < 3:  # 如果Ground Truth太少，尝试补充
+            module_name = module_path.split('/')[-1]
+            generated_gt = self._generate_ground_truth_for_module(module_name, module_path, current_definitions)
+
+            if generated_gt:
+                print(f"📝 为模块 '{module_path}' 补充Ground Truth定义")
+                current_definitions["ground_truth"].extend(generated_gt)
+
+        return current_definitions
+
+    def _generate_ground_truth_for_module(self, module_name: str, module_path: str, definitions: Dict[str, Any]) -> List[str]:
+        """为模块生成Ground Truth定义"""
+        generated_gt = []
+
+        # 基于模块名推断功能
+        if "collect" in module_name.lower() or "data" in module_name.lower():
+            generated_gt.extend([
+                f"{module_name}负责收集和管理项目数据",
+                f"确保数据的完整性和准确性",
+                f"支持模块化和增量数据收集"
+            ])
+        elif "analyze" in module_name.lower() or "analysis" in module_name.lower():
+            generated_gt.extend([
+                f"{module_name}负责代码分析和质量检查",
+                f"识别潜在问题和改进机会",
+                f"提供结构化的分析报告"
+            ])
+        elif "install" in module_name.lower() or "setup" in module_name.lower():
+            generated_gt.extend([
+                f"{module_name}负责项目安装和环境配置",
+                f"自动化安装流程和依赖管理",
+                f"确保安装过程的可靠性"
+            ])
+
+        # 基于现有功能定义生成
+        core_functions = definitions.get("core_functions", [])
+        if core_functions:
+            for func in core_functions[:3]:  # 最多取前3个
+                generated_gt.append(f"{module_name}提供{func}功能")
+
+        # 基于代码文件推断功能
+        try:
+            module_full_path = self.root_path / module_path
+            if module_full_path.exists():
+                py_files = list(module_full_path.glob("*.py"))
+                if py_files:
+                    generated_gt.append(f"{module_name}包含{len(py_files)}个Python模块文件")
+        except:
+            pass
+
+        return generated_gt[:5]  # 限制数量
 
     def _analyze_code_context(self, query: str, modules: List[str]) -> Dict[str, Any]:
         """分析代码上下文"""
@@ -391,15 +415,25 @@ class ProblemAnalyzer:
         """步骤2: 分析相关日志"""
         print("\n📋 步骤2: 分析相关日志...")
 
-        # 读取CLAUDE.md中的日志信息
+        # 读取CLAUDE.md和AGENTS.md中的日志信息
         claude_content = SysmemUtils.safe_read_file(self.claude_md_path)
-        log_info = self._extract_log_information(claude_content)
+        agents_md_path = self.root_path / "AGENTS.md"
+        agents_content = SysmemUtils.safe_read_file(agents_md_path)
+
+        log_info = self._extract_log_information(claude_content + "\n" + agents_content)
 
         # 根据问题类型确定需要查看的日志
         relevant_logs = self._determine_relevant_logs(context.problem_type, log_info)
+
+        # 实际读取和分析日志文件
+        log_analysis_results = self._read_and_analyze_log_files(relevant_logs, context)
+
         context.relevant_logs = relevant_logs
+        context.code_analysis["log_analysis"] = log_analysis_results
 
         print(f"✅ 识别相关日志: {', '.join(relevant_logs)}")
+        print(f"📊 发现相关日志条目: {log_analysis_results.get('total_entries', 0)} 条")
+        print(f"🚨 发现错误/警告: {log_analysis_results.get('error_count', 0)} 条")
 
     def _extract_log_information(self, claude_content: str) -> Dict[str, Any]:
         """从CLAUDE.md提取日志信息"""
@@ -442,6 +476,193 @@ class ProblemAnalyzer:
         relevant_logs.extend(log_info.get("log_locations", []))
 
         return list(set(relevant_logs))
+
+    def _read_and_analyze_log_files(self, log_files: List[str], context: ProblemContext) -> Dict[str, Any]:
+        """实际读取和分析日志文件"""
+        analysis_results = {
+            "total_entries": 0,
+            "error_count": 0,
+            "warning_count": 0,
+            "relevant_entries": [],
+            "log_files_found": [],
+            "error_patterns": [],
+            "time_analysis": {}
+        }
+
+        # 常见日志文件位置
+        log_search_paths = [
+            self.root_path / "logs",
+            self.root_path / ".logs",
+            self.root_path / "log",
+            self.root_path,
+            self.root_path / "var" / "log",
+            self.root_path / "tmp"
+        ]
+
+        for log_file in log_files:
+            found_log_files = []
+
+            # 搜索日志文件
+            for search_path in log_search_paths:
+                if search_path.exists():
+                    # 直接匹配
+                    direct_path = search_path / log_file
+                    if direct_path.exists() and direct_path.is_file():
+                        found_log_files.append(direct_path)
+
+                    # 通配符搜索
+                    for log_path in search_path.glob(f"*{log_file}*"):
+                        if log_path.is_file():
+                            found_log_files.append(log_path)
+
+            # 分析找到的日志文件
+            for log_path in found_log_files:
+                print(f"📖 分析日志文件: {log_path}")
+                try:
+                    with open(log_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        log_content = f.read()
+
+                    file_analysis = self._analyze_log_content(log_content, log_path.name, context)
+                    analysis_results["total_entries"] += file_analysis["entries"]
+                    analysis_results["error_count"] += file_analysis["errors"]
+                    analysis_results["warning_count"] += file_analysis["warnings"]
+                    analysis_results["relevant_entries"].extend(file_analysis["relevant_entries"])
+                    analysis_results["log_files_found"].append(str(log_path))
+                    analysis_results["error_patterns"].extend(file_analysis["error_patterns"])
+
+                    print(f"  - 发现条目: {file_analysis['entries']}, 错误: {file_analysis['errors']}")
+
+                except Exception as e:
+                    print(f"  ⚠️  读取日志文件失败: {e}")
+
+        # 如果没有找到任何日志文件，尝试查看标准输出
+        if not analysis_results["log_files_found"]:
+            print("📋 未找到指定日志文件，尝试查找应用输出文件...")
+            standard_logs = [
+                "app.log", "application.log", "server.log", "service.log",
+                "output.log", "out.log", "console.log"
+            ]
+
+            for std_log in standard_logs:
+                for search_path in log_search_paths[:3]:  # 只搜索前几个路径
+                    log_path = search_path / std_log
+                    if log_path.exists():
+                        print(f"📖 发现标准日志: {log_path}")
+                        try:
+                            with open(log_path, 'r', encoding='utf-8', errors='ignore') as f:
+                                log_content = f.read()
+
+                            file_analysis = self._analyze_log_content(log_content, log_path.name, context)
+                            analysis_results["total_entries"] += file_analysis["entries"]
+                            analysis_results["error_count"] += file_analysis["errors"]
+                            analysis_results["warning_count"] += file_analysis["warnings"]
+                            analysis_results["relevant_entries"].extend(file_analysis["relevant_entries"])
+                            analysis_results["log_files_found"].append(str(log_path))
+                        except Exception as e:
+                            print(f"  ⚠️  读取失败: {e}")
+
+        return analysis_results
+
+    def _analyze_log_content(self, content: str, filename: str, context: ProblemContext) -> Dict[str, Any]:
+        """分析日志内容"""
+        analysis = {
+            "entries": 0,
+            "errors": 0,
+            "warnings": 0,
+            "relevant_entries": [],
+            "error_patterns": []
+        }
+
+        lines = content.split('\n')
+        user_query_lower = context.user_query.lower()
+        query_keywords = user_query_lower.split()
+
+        # 分析每一行
+        for i, line in enumerate(lines):
+            if not line.strip():
+                continue
+
+            analysis["entries"] += 1
+            line_lower = line.lower()
+
+            # 检查错误模式
+            error_patterns = [
+                r'error', r'exception', r'failed', r'crash', r'panic',
+                r'错误', r'异常', r'失败', r'崩溃'
+            ]
+
+            warning_patterns = [
+                r'warning', r'warn', r'deprecated', r'timeout',
+                r'警告', r'超时', r'已弃用'
+            ]
+
+            # 检查是否包含错误
+            is_error = any(re.search(pattern, line_lower) for pattern in error_patterns)
+            is_warning = any(re.search(pattern, line_lower) for pattern in warning_patterns)
+
+            if is_error:
+                analysis["errors"] += 1
+                # 记录错误模式
+                for pattern in error_patterns:
+                    if re.search(pattern, line_lower):
+                        analysis["error_patterns"].append({
+                            "pattern": pattern,
+                            "line": line.strip(),
+                            "line_number": i + 1,
+                            "file": filename
+                        })
+                        break
+
+            if is_warning:
+                analysis["warnings"] += 1
+
+            # 检查是否与用户查询相关
+            relevance_score = 0
+            for keyword in query_keywords:
+                if keyword in line_lower:
+                    relevance_score += 1
+
+            # 如果相关度高或包含错误/警告，记录这一行
+            if relevance_score > 0 or is_error or is_warning:
+                analysis["relevant_entries"].append({
+                    "line_number": i + 1,
+                    "content": line.strip(),
+                    "file": filename,
+                    "is_error": is_error,
+                    "is_warning": is_warning,
+                    "relevance_score": relevance_score,
+                    "timestamp": self._extract_timestamp(line)
+                })
+
+        # 按相关性排序
+        analysis["relevant_entries"].sort(
+            key=lambda x: (x["is_error"], x["is_warning"], x["relevance_score"]),
+            reverse=True
+        )
+
+        # 只保留最相关的条目
+        if len(analysis["relevant_entries"]) > 50:
+            analysis["relevant_entries"] = analysis["relevant_entries"][:50]
+
+        return analysis
+
+    def _extract_timestamp(self, log_line: str) -> Optional[str]:
+        """从日志行提取时间戳"""
+        # 常见时间戳模式
+        timestamp_patterns = [
+            r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}',  # 2023-12-01 10:30:45
+            r'\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}',  # 12/01/2023 10:30:45
+            r'\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2}',  # 12-01-2023 10:30:45
+            r'\d{2}:\d{2}:\d{2}',                 # 10:30:45
+            r'\w{3} \d{2} \d{2}:\d{2}:\d{2}',     # Dec 01 10:30:45
+        ]
+
+        for pattern in timestamp_patterns:
+            match = re.search(pattern, log_line)
+            if match:
+                return match.group()
+
+        return None
 
     def _locate_problem_source(self, context: ProblemContext):
         """步骤3: 问题定位和原因分析"""
@@ -762,378 +983,346 @@ class ProblemAnalyzer:
         return validation
 
     def _generate_solution_options(self, context: ProblemContext, evidence: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """步骤6: 多方案生成和利弊分析"""
-        print("\n📋 步骤6: 多方案生成和利弊分析...")
+        """步骤6: 生成ABC三种解决方案"""
+        print("\n📋 步骤6: 生成ABC三种解决方案...")
+        print("🔄 根据问题分析生成三种不同方向的解决方案...")
 
         options = []
 
-        # 基于问题类型生成多个解决方案选项
-        if context.problem_type == ProblemType.FUNCTIONAL:
-            options.extend([
-                {
-                    "id": 1,
-                    "title": "快速修复方案",
-                    "description": "针对具体问题的直接修复",
-                    "approach": "targeted_fix",
-                    "pros": [
-                        "修复速度快，见效明显",
-                        "风险较低，影响范围小",
-                        "易于测试和验证"
-                    ],
-                    "cons": [
-                        "可能只是表面修复，根本问题未解决",
-                        "可能在未来再次出现类似问题",
-                        "不考虑整体架构一致性"
-                    ],
-                    "effort": "low",
-                    "risk": "low",
-                    "affected_modules": context.related_modules[:1],
-                    "evidence_support": evidence.get("high_confidence", 0),
-                    "steps": [
-                        "定位具体错误位置",
-                        "修复错误逻辑",
-                        "添加必要的异常处理",
-                        "进行功能测试"
-                    ]
-                },
-                {
-                    "id": 2,
-                    "title": "架构优化方案",
-                    "description": "从根本上优化相关模块的架构设计",
-                    "approach": "architectural_improvement",
-                    "pros": [
-                        "从根本上解决问题，避免复发",
-                        "提高代码质量和可维护性",
-                        "符合项目架构最佳实践"
-                    ],
-                    "cons": [
-                        "需要更多时间和精力",
-                        "影响范围较大，可能影响其他功能",
-                        "需要更全面的测试"
-                    ],
-                    "effort": "high",
-                    "risk": "medium",
-                    "affected_modules": context.related_modules,
-                    "evidence_support": evidence.get("medium_confidence", 0),
-                    "steps": [
-                        "重新设计相关模块架构",
-                        "重构核心功能",
-                        "完善错误处理机制",
-                        "更新相关文档",
-                        "进行全面测试"
-                    ]
-                },
-                {
-                    "id": 3,
-                    "title": "配置调整方案",
-                    "description": "通过调整配置参数解决问题",
-                    "approach": "configuration_tuning",
-                    "pros": [
-                        "无需修改代码，风险最低",
-                        "可以快速部署和回滚",
-                        "易于监控和调整"
-                    ],
-                    "cons": [
-                        "可能只适用于特定场景",
-                        "配置复杂度可能增加",
-                        "可能影响系统其他部分"
-                    ],
-                    "effort": "medium",
-                    "risk": "low",
-                    "affected_modules": ["config"],
-                    "evidence_support": evidence.get("low_confidence", 0),
-                    "steps": [
-                        "分析当前配置问题",
-                        "调整相关配置参数",
-                        "更新配置文档",
-                        "测试配置效果",
-                        "监控系统表现"
-                    ]
-                }
-            ])
+        # 方案A: 临时绕过方案
+        option_a = self._generate_workaround_solution(context, evidence)
+        options.append(option_a)
 
-        elif context.problem_type == ProblemType.PERFORMANCE:
-            options.extend([
-                {
-                    "id": 1,
-                    "title": "算法优化方案",
-                    "description": "优化算法和数据结构提升性能",
-                    "approach": "algorithm_optimization",
-                    "pros": [
-                        "从根本上提升性能",
-                        "长期效益明显",
-                        "提高代码质量"
-                    ],
-                    "cons": [
-                        "需要深入理解业务逻辑",
-                        "可能改变API接口",
-                        "需要大量测试"
-                    ],
-                    "effort": "high",
-                    "risk": "medium",
-                    "affected_modules": context.related_modules,
-                    "evidence_support": evidence.get("high_confidence", 0),
-                    "steps": [
-                        "分析性能瓶颈",
-                        "优化算法复杂度",
-                        "改进数据结构",
-                        "添加缓存机制",
-                        "性能测试验证"
-                    ]
-                },
-                {
-                    "id": 2,
-                    "title": "资源优化方案",
-                    "description": "优化资源使用和配置",
-                    "approach": "resource_optimization",
-                    "pros": [
-                        "实施相对简单",
-                        "效果立竿见影",
-                        "风险较低"
-                    ],
-                    "cons": [
-                        "性能提升有限",
-                        "可能只是临时解决方案",
-                        "资源成本可能增加"
-                    ],
-                    "effort": "medium",
-                    "risk": "low",
-                    "affected_modules": context.related_modules,
-                    "evidence_support": evidence.get("medium_confidence", 0),
-                    "steps": [
-                        "分析资源使用情况",
-                        "调整内存和CPU配置",
-                        "优化数据库查询",
-                        "添加负载均衡",
-                        "监控性能指标"
-                    ]
-                }
-            ])
+        # 方案B: 完整修复方案（默认推荐）
+        option_b = self._generate_complete_fix_solution(context, evidence)
+        options.append(option_b)
 
-        elif context.problem_type == ProblemType.CONFIGURATION:
-            options.extend([
-                {
-                    "id": 1,
-                    "title": "环境配置修复",
-                    "description": "修复环境配置和依赖问题",
-                    "approach": "environment_fix",
-                    "pros": [
-                        "解决根本环境问题",
-                        "确保部署一致性",
-                        "提高系统稳定性"
-                    ],
-                    "cons": [
-                        "可能需要重启服务",
-                        "影响范围较广",
-                        "需要环境管理权限"
-                    ],
-                    "effort": "medium",
-                    "risk": "medium",
-                    "affected_modules": ["deployment", "config"],
-                    "evidence_support": evidence.get("high_confidence", 0),
-                    "steps": [
-                        "检查环境配置",
-                        "修复依赖版本冲突",
-                        "更新配置文件",
-                        "验证环境一致性",
-                        "测试部署流程"
-                    ]
-                },
-                {
-                    "id": 2,
-                    "title": "参数调整方案",
-                    "description": "调整运行时参数解决问题",
-                    "approach": "parameter_tuning",
-                    "pros": [
-                        "无需重启服务",
-                        "可以实时调整",
-                        "风险最低"
-                    ],
-                    "cons": [
-                        "可能只是临时解决方案",
-                        "效果有限",
-                        "需要持续监控"
-                    ],
-                    "effort": "low",
-                    "risk": "low",
-                    "affected_modules": ["config"],
-                    "evidence_support": evidence.get("low_confidence", 0),
-                    "steps": [
-                        "识别问题参数",
-                        "调整参数值",
-                        "监控系统表现",
-                        "记录参数变更",
-                        "制定长期计划"
-                    ]
-                }
-            ])
+        # 方案C: 保守疗法方案
+        option_c = self._generate_conservative_solution(context, evidence)
+        options.append(option_c)
 
-        # 根据架构约束过滤选项
-        valid_options = []
-        for option in options:
-            if self._validate_option_architecture(option, context):
-                valid_options.append(option)
+        # 为每个方案添加标识
+        for i, option in enumerate(options, 1):
+            option["option_letter"] = chr(64 + i)  # A, B, C
+            option["is_recommended"] = (i == 2)  # B方案默认推荐
 
-        print(f"✅ 生成 {len(valid_options)} 个解决方案选项")
+        return options
 
-        return valid_options
-
-    def _validate_option_architecture(self, option: Dict, context: ProblemContext) -> bool:
-        """验证选项是否符合架构约束"""
-        # 检查是否违反模块架构定义
-        for module in option.get("affected_modules", []):
-            module_defs = context.code_analysis.get("module_definitions", {}).get(module, {})
-            ground_truth = module_defs.get("ground_truth", [])
-
-            # 简化验证：如果选项类型与模块定义不冲突
-            if option.get("approach") == "targeted_fix" and any("配置" in truth for truth in ground_truth):
-                return False
-
-        return True
-
-    def _generate_functional_fix(self, context: ProblemContext) -> Dict[str, Any]:
-        """生成功能性修复方案"""
+    def _generate_workaround_solution(self, context: ProblemContext, evidence: Dict[str, Any]) -> Dict[str, Any]:
+        """生成方案A: 临时绕过方案"""
         return {
-            "steps": [
-                "定位问题函数",
-                "分析函数逻辑",
-                "修复错误代码",
-                "添加错误处理"
+            "id": "A",
+            "title": "方案A - 临时绕过方案",
+            "description": "快速临时解决方案，绕过问题点以恢复系统功能",
+            "approach": "workaround",
+            "method": "临时绕过",
+            "pros": [
+                "实施速度快，立即可用",
+                "风险最低，不影响现有功能",
+                "不需要深入修改代码架构",
+                "可以作为临时解决方案保证业务连续性"
             ],
-            "files_to_modify": context.code_analysis["code_context"]["files"][:2],  # 限制文件数量
-            "estimated_complexity": "medium"
+            "cons": [
+                "只是治标不治本，根本问题依然存在",
+                "可能在系统重启后失效",
+                "可能引入技术债务",
+                "不适合作为长期解决方案"
+            ],
+            "effort": "low",
+            "risk": "low",
+            "affected_modules": context.related_modules[:1],
+            "evidence_support": evidence.get("low_confidence", 0),
+            "temporary": True,
+            "estimated_time": "30分钟 - 2小时",
+            "steps": [
+                "识别问题触发的具体位置",
+                "设计临时绕过逻辑",
+                "实施代码修改",
+                "添加临时监控日志",
+                "验证绕过效果"
+            ],
+            "fallback_plan": "如果绕过失败，需要采用完整修复方案"
         }
 
-    def _generate_config_fix(self, context: ProblemContext) -> Dict[str, Any]:
-        """生成配置修复方案"""
+    def _generate_complete_fix_solution(self, context: ProblemContext, evidence: Dict[str, Any]) -> Dict[str, Any]:
+        """生成方案B: 完整修复方案"""
         return {
-            "steps": [
-                "检查配置文件",
-                "调整参数值",
-                "重启服务"
+            "id": "B",
+            "title": "方案B - 完整修复方案（推荐）",
+            "description": "从根本上解决问题，确保长期稳定性和系统健康",
+            "approach": "complete_fix",
+            "method": "完整修复",
+            "pros": [
+                "彻底解决根本问题",
+                "提高系统长期稳定性",
+                "符合最佳实践和架构原则",
+                "避免技术债务积累",
+                "提升代码质量和可维护性"
             ],
-            "config_files": ["config.json", ".env"],
-            "estimated_complexity": "low"
+            "cons": [
+                "实施时间较长，需要更多测试",
+                "可能影响更多系统组件",
+                "需要更深入的代码理解",
+                "风险相对较高，需要谨慎实施"
+            ],
+            "effort": "high",
+            "risk": "medium",
+            "affected_modules": context.related_modules,
+            "evidence_support": evidence.get("high_confidence", 0),
+            "temporary": False,
+            "estimated_time": "2-8小时",
+            "recommended": True,
+            "steps": [
+                "深入分析问题根本原因",
+                "设计完整的解决方案",
+                "重构相关代码模块",
+                "更新单元测试和集成测试",
+                "性能测试和回归测试",
+                "更新文档和Ground Truth"
+            ],
+            "success_criteria": [
+                "问题完全解决，不再重现",
+                "系统性能不下降",
+                "所有相关测试通过",
+                "代码质量得到改善"
+            ]
         }
 
-    def _generate_performance_fix(self, context: ProblemContext) -> Dict[str, Any]:
-        """生成性能修复方案"""
+    def _generate_conservative_solution(self, context: ProblemContext, evidence: Dict[str, Any]) -> Dict[str, Any]:
+        """生成方案C: 保守疗法方案"""
         return {
-            "steps": [
-                "性能分析",
-                "算法优化",
-                "缓存添加",
-                "资源调整"
+            "id": "C",
+            "title": "方案C - 保守疗法方案",
+            "description": "渐进式改进，最小化变更风险，逐步优化系统",
+            "approach": "conservative",
+            "method": "保守疗法",
+            "pros": [
+                "变更风险最小，容易控制",
+                "可以分阶段实施，逐步验证",
+                "对现有系统影响最小",
+                "便于回滚和风险控制",
+                "团队学习和适应成本较低"
             ],
-            "files_to_modify": context.code_analysis["code_context"]["files"][:3],
-            "estimated_complexity": "high"
+            "cons": [
+                "解决时间较长，见效慢",
+                "可能无法完全解决根本问题",
+                "需要持续的监控和调整",
+                "可能需要多次迭代"
+            ],
+            "effort": "medium",
+            "risk": "low",
+            "affected_modules": context.related_modules[:2],
+            "evidence_support": evidence.get("medium_confidence", 0),
+            "temporary": False,
+            "estimated_time": "1-4小时",
+            "iterative": True,
+            "steps": [
+                "问题风险评估和优先级排序",
+                "设计最小化变更方案",
+                "实施第一阶段改进",
+                "监控改进效果",
+                "根据结果决定下一步行动",
+                "迭代优化直到问题解决"
+            ],
+            "phases": [
+                "第一阶段: 风险缓解（1-2小时）",
+                "第二阶段: 功能改进（2-4小时）",
+                "第三阶段: 质量提升（按需）"
+            ],
+            "monitoring_required": True
         }
 
-    def _validate_solution_architecture(self, solution: Dict, context: ProblemContext) -> bool:
-        """验证解决方案是否符合架构"""
-        # 简化验证：检查是否涉及过多模块
-        if len(solution["affected_modules"]) > 3:
-            return False
+    def _interactive_solution_selection(self, options: List[Dict[str, Any]], evidence: Dict[str, Any], context: ProblemContext) -> Optional[Dict[str, Any]]:
+        """交互式ABC方案选择流程"""
+        print(f"\n🎯 ABC三种解决方案交互式选择流程")
+        print("="*70)
 
-        # 检查是否符合模块的ground truth定义
-        for module in solution["affected_modules"]:
-            module_defs = context.code_analysis["module_definitions"].get(module, {})
-            ground_truth = module_defs.get("ground_truth", [])
-
-            # 简化检查：如果解决方案类型与模块定义不冲突
-            if solution["type"] == "code_fix" and any("配置" in truth for truth in ground_truth):
-                return False
-
-        return True
-
-    def _adjust_solution_for_architecture(self, solution: Dict, context: ProblemContext) -> Optional[Dict]:
-        """调整解决方案以符合架构"""
-        # 简化调整：减少涉及的模块
-        if len(solution["affected_modules"]) > 3:
-            solution["affected_modules"] = solution["affected_modules"][:2]
-            solution["description"] += " (已调整以符合架构约束)"
-            return solution
-
-        return None
-
-    def _interact_solution_selection(self, options: List[Dict[str, Any]], evidence: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """步骤7: 用户交互和方案选择"""
-        print("\n📋 步骤7: 解决方案选项分析")
+        # 显示问题分析摘要
         print(f"\n📊 问题分析摘要:")
+        print(f"- 问题类型: {context.problem_type.value}")
+        print(f"- 用户问题: {context.user_query}")
+        print(f"- 关联模块: {', '.join(context.related_modules) if context.related_modules else '无'}")
         print(f"- 证据总数: {evidence.get('total_evidence', 0)} 项")
         print(f"- 高置信度证据: {evidence.get('high_confidence', 0)} 项")
-        print(f"- 相关文件: {len(evidence.get('supporting_files', []))} 个")
+        print(f"- 相关日志文件: {len(evidence.get('log_analysis', {}).get('log_files_found', []))} 个")
 
-        print(f"\n🔍 可选解决方案选项:")
-
+        # 显示ABC三种方案
+        print(f"\n💡 ABC三种解决方案:")
         for i, option in enumerate(options, 1):
-            print(f"\n{'='*60}")
-            print(f"选项 {i}: {option['title']}")
-            print(f"描述: {option['description']}")
-            print(f"方法: {option['approach']}")
-            print(f"工作量: {option['effort']}")
-            print(f"风险等级: {option['risk']}")
+            letter = option['option_letter']
+            recommended = " (推荐)" if option.get('is_recommended') else ""
+            print(f"\n{'='*70}")
+            print(f"方案 {letter}{recommended}: {option['title']}")
+            print(f"方法: {option['method']} | 工作量: {option['effort']} | 风险: {option['risk']}")
+            print(f"预估时间: {option.get('estimated_time', '未知')}")
             print(f"影响模块: {', '.join(option['affected_modules'])}")
 
-            print(f"\n✅ 优势:")
+            print(f"\n✅ 主要优势:")
             for pro in option['pros']:
                 print(f"  • {pro}")
 
-            print(f"\n❌ 劣势:")
+            print(f"\n❌ 主要劣势:")
             for con in option['cons']:
                 print(f"  • {con}")
 
-            print(f"\n📋 实施步骤:")
-            for j, step in enumerate(option['steps'], 1):
+            print(f"\n📋 核心步骤 (前3步):")
+            for j, step in enumerate(option['steps'][:3], 1):
                 print(f"  {j}. {step}")
+            if len(option['steps']) > 3:
+                print(f"  ... 共{len(option['steps'])}个步骤")
+
+        # 用户交互选择
+        while True:
+            try:
+                print(f"\n{'='*70}")
+                choice = input(f"\n请选择操作:\n"
+                               f"1. 选择ABC方案 (A-C)\n"
+                               f"2. 查看详细证据信息\n"
+                               f"3. 查看相关模块Ground Truth\n"
+                               f"4. 查看日志分析结果\n"
+                               f"5. 完成分析\n\n"
+                               f"请输入选择 (1-5): ").strip()
+
+                if choice == '1':
+                    return self._select_abc_solution(options)
+                elif choice == '2':
+                    self._show_detailed_evidence(evidence)
+                elif choice == '3':
+                    self._show_module_ground_truth(context)
+                elif choice == '4':
+                    self._show_log_analysis_results(context)
+                elif choice == '5':
+                    print(f"\n📋 分析完成。")
+                    print(f"💡 建议保存分析结果，并基于证据选择合适的解决方案。")
+                    return None
+                else:
+                    print("请输入有效选项 (1-5)")
+
+            except ValueError:
+                print("请输入有效数字")
+            except KeyboardInterrupt:
+                print(f"\n📋 用户中断分析")
+                return None
+
+    def _select_abc_solution(self, options: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """选择ABC具体方案"""
+        print(f"\n🎯 请选择ABC方案:")
+
+        for option in options:
+            letter = option['option_letter']
+            recommended = " (推荐)" if option.get('is_recommended') else ""
+            print(f"  {letter}. {option['title']}{recommended}")
+            print(f"     {option['description']}")
 
         while True:
             try:
-                print(f"\n{'='*60}")
-                choice = input(f"\n请选择解决方案选项 (1-{len(options)}) 或输入 'details' 查看详细证据, 'cancel' 取消: ").strip().lower()
+                choice = input(f"\n选择方案 (A/B/C) 或 'back' 返回: ").strip().upper()
 
-                if choice == 'cancel':
+                if choice == 'BACK':
                     return None
-                elif choice == 'details':
-                    self._show_detailed_evidence(evidence)
-                    continue
 
-                choice_idx = int(choice) - 1
-                if 0 <= choice_idx < len(options):
-                    selected = options[choice_idx]
-                    print(f"\n✅ 已选择: {selected['title']}")
-                    print(f"方法: {selected['approach']}")
-                    print(f"工作量: {selected['effort']}, 风险: {selected['risk']}")
+                if choice in ['A', 'B', 'C']:
+                    selected = None
+                    for option in options:
+                        if option['option_letter'] == choice:
+                            selected = option
+                            break
 
-                    confirm = input("\n确认此选择? (y/n): ").strip().lower()
-                    if confirm == 'y':
-                        return selected
+                    if selected:
+                        print(f"\n✅ 已选择: {selected['title']}")
+                        print(f"📋 方案详情:")
+                        print(f"  - 方法: {selected['method']}")
+                        print(f"  - 工作量: {selected['effort']}")
+                        print(f"  - 风险等级: {selected['risk']}")
+                        print(f"  - 预估时间: {selected.get('estimated_time', '未知')}")
+                        print(f"  - 临时方案: {'是' if selected.get('temporary') else '否'}")
+
+                        # 询问确认
+                        confirm = input(f"\n确认选择方案 {choice} '{selected['title']}'? (y/n): ").strip().lower()
+                        if confirm == 'y':
+                            print(f"\n🎉 方案 {choice} 已确认！")
+                            return selected
+                        else:
+                            print(f"已取消选择，请重新选择。")
+                    else:
+                        print(f"未找到方案 {choice}，请重新选择。")
+                else:
+                    print("请输入 A、B、C 或 'back'")
 
             except ValueError:
-                print("无效输入，请输入数字、'details'或'cancel'")
+                print("输入无效，请重新输入")
 
-    def _show_detailed_evidence(self, evidence: Dict[str, Any]):
-        """显示详细证据信息"""
-        print(f"\n📋 详细证据信息:")
-        print(f"{'='*50}")
+    def _show_module_ground_truth(self, context: ProblemContext):
+        """显示相关模块的Ground Truth"""
+        print(f"\n📋 相关模块Ground Truth:")
+        print("="*50)
 
-        print(f"\n📊 证据统计:")
-        print(f"- 总证据数: {evidence.get('total_evidence', 0)}")
-        print(f"- 高置信度: {evidence.get('high_confidence', 0)}")
-        print(f"- 中等置信度: {evidence.get('medium_confidence', 0)}")
-        print(f"- 低置信度: {evidence.get('low_confidence', 0)}")
+        module_definitions = context.code_analysis.get("module_definitions", {})
 
-        print(f"\n📁 相关文件:")
-        for file in evidence.get('supporting_files', []):
-            print(f"- {file}")
+        for module in context.related_modules:
+            if module in module_definitions:
+                definitions = module_definitions[module]
+                print(f"\n📦 模块: {module}")
 
-        print(f"\n🔍 证据类型:")
-        for evidence_type, items in evidence.get('evidence_by_type', {}).items():
-            print(f"\n{evidence_type}:")
-            for item in items:
-                print(f"  • {item.get('description', '未知描述')} (置信度: {item.get('confidence', 0):.1f})")
-                if 'file' in item:
-                    print(f"    文件: {item['file']}")
+                ground_truth = definitions.get("ground_truth", [])
+                if ground_truth:
+                    print(f"\n  🎯 Ground Truth ({len(ground_truth)}项):")
+                    for i, gt in enumerate(ground_truth, 1):
+                        print(f"    {i}. {gt}")
+                else:
+                    print(f"\n  ⚠️  未找到Ground Truth定义")
+
+                capabilities = definitions.get("capabilities", [])
+                if capabilities:
+                    print(f"\n  🔧 功能能力 ({len(capabilities)}项):")
+                    for cap in capabilities[:3]:
+                        print(f"    • {cap}")
+
+                limitations = definitions.get("limitations", [])
+                if limitations:
+                    print(f"\n  🚫 限制条件 ({len(limitations)}项):")
+                    for limit in limitations[:3]:
+                        print(f"    • {limit}")
+            else:
+                print(f"\n📦 模块: {module}")
+                print(f"  ⚠️  未找到模块定义信息")
+
+        input("\n按回车键继续...")
+
+    def _show_log_analysis_results(self, context: ProblemContext):
+        """显示日志分析结果"""
+        print(f"\n📋 日志分析结果:")
+        print("="*50)
+
+        log_analysis = context.code_analysis.get("log_analysis", {})
+
+        if log_analysis:
+            print(f"\n📊 统计信息:")
+            print(f"  - 总日志条目: {log_analysis.get('total_entries', 0)} 条")
+            print(f"  - 错误条目: {log_analysis.get('error_count', 0)} 条")
+            print(f"  - 警告条目: {log_analysis.get('warning_count', 0)} 条")
+            print(f"  - 发现日志文件: {len(log_analysis.get('log_files_found', []))} 个")
+
+            relevant_entries = log_analysis.get('relevant_entries', [])
+            if relevant_entries:
+                print(f"\n🔍 相关日志条目 (前10条):")
+                for entry in relevant_entries[:10]:
+                    status = "🚨" if entry['is_error'] else "⚠️" if entry['is_warning'] else "ℹ️"
+                    timestamp = f" [{entry.get('timestamp', 'N/A')}]" if entry.get('timestamp') else ""
+                    print(f"  {status} {timestamp} {entry['file']}:{entry['line_number']}")
+                    print(f"     {entry['content']}")
+                if len(relevant_entries) > 10:
+                    print(f"  ... 还有 {len(relevant_entries) - 10} 条相关日志")
+            else:
+                print(f"\n ℹ️ 未发现与问题相关的日志条目")
+
+            error_patterns = log_analysis.get('error_patterns', [])
+            if error_patterns:
+                print(f"\n🚨 错误模式:")
+                for pattern in error_patterns[:5]:
+                    print(f"  • {pattern['pattern']} - {pattern['file']}:{pattern['line_number']}")
+        else:
+            print(f"\n ⚠️ 未找到日志分析结果")
 
         input("\n按回车键继续...")
 
@@ -1385,6 +1574,121 @@ class ProblemAnalyzer:
             "applied_fixes": applied_fixes,
             "total_time": fix_plan.get("estimated_time", 0)
         }
+
+    def _load_and_validate_project_data(self) -> Optional[Dict[str, Any]]:
+        """加载并验证项目数据的新鲜度"""
+        if not self.project_data_path.exists():
+            print("⚠️  未找到项目数据文件，需要先收集项目数据")
+            return None
+
+        try:
+            with open(self.project_data_path, 'r', encoding='utf-8') as f:
+                project_data = json.load(f)
+        except Exception as e:
+            print(f"❌ 无法读取项目数据文件: {e}")
+            return None
+
+        # 检查数据时间戳
+        scan_time = project_data.get("scan_info", {}).get("scan_time", "")
+        if not scan_time:
+            print("⚠️  项目数据缺少时间戳信息")
+            return project_data  # 仍然返回数据，但警告
+
+        print(f"✅ 项目数据已加载，扫描时间: {scan_time}")
+        return project_data
+
+    def _check_and_update_data_freshness(self, user_query: str, project_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """检查数据新鲜度并根据需要进行局部更新"""
+        print("🔍 检查相关模块的数据新鲜度...")
+
+        # 1. 识别用户查询相关的模块
+        related_modules = self._find_related_modules(user_query, project_data)
+        if not related_modules:
+            print("ℹ️  未识别到相关模块，跳过数据更新检查")
+            return None
+
+        print(f"📋 识别到相关模块: {', '.join(related_modules)}")
+
+        # 2. 检查相关模块文件的修改时间
+        modules_need_update = []
+        scan_time_str = project_data.get("scan_info", {}).get("scan_time", "")
+
+        if scan_time_str:
+            try:
+                from datetime import datetime
+                scan_time = datetime.strptime(scan_time_str, "%Y-%m-%d %H:%M:%S")
+
+                for module in related_modules:
+                    module_path = self.root_path / module
+                    if module_path.exists():
+                        # 检查模块内文件的最新修改时间
+                        latest_mtime = 0
+                        for file_path in module_path.rglob("*"):
+                            if file_path.is_file():
+                                mtime = file_path.stat().st_mtime
+                                latest_mtime = max(latest_mtime, mtime)
+
+                        scan_timestamp = scan_time.timestamp()
+                        if latest_mtime > scan_timestamp:
+                            modules_need_update.append(module)
+                            time_diff = latest_mtime - scan_timestamp
+                            print(f"🔄 模块 '{module}' 需要更新 (文件变更时间差: {int(time_diff/60)} 分钟)")
+            except Exception as e:
+                print(f"⚠️  时间比较失败: {e}")
+
+        # 3. 执行局部数据更新
+        if modules_need_update:
+            print(f"🔄 执行局部数据更新，涉及 {len(modules_need_update)} 个模块...")
+            return self._perform_partial_data_update(modules_need_update)
+        else:
+            print("✅ 相关模块数据都是最新的，无需更新")
+            return None
+
+    def _perform_partial_data_update(self, modules_to_update: List[str]) -> Optional[Dict[str, Any]]:
+        """执行局部数据更新"""
+        try:
+            # 导入数据收集器
+            from collect_data import ProjectDataCollector
+
+            print("🔄 正在执行局部数据收集...")
+            collector = ProjectDataCollector(str(self.root_path))
+
+            # 对每个需要更新的模块进行数据收集
+            updated_data = None
+            for module in modules_to_update:
+                print(f"📊 收集模块 '{module}' 的最新数据...")
+                module_data = collector.collect_module_specific_data(module)
+
+                if module_data and "modules" in module_data:
+                    if not updated_data:
+                        # 加载现有数据作为基础
+                        updated_data = self._load_project_data()
+
+                    # 更新对应模块的数据
+                    if module in module_data["modules"]:
+                        updated_data["modules"][module] = module_data["modules"][module]
+                        print(f"✅ 模块 '{module}' 数据已更新")
+
+            if updated_data:
+                # 保存更新后的数据
+                self._save_project_data(updated_data)
+                print("✅ 局部数据更新完成并已保存")
+                return updated_data
+
+        except Exception as e:
+            print(f"⚠️  局部数据更新失败: {e}")
+            print("💡 建议手动运行: python3 scripts/collect_data.py --module <模块名>")
+
+        return None
+
+    def _save_project_data(self, data: Dict[str, Any]):
+        """保存项目数据"""
+        try:
+            self.project_data_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.project_data_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"❌ 保存项目数据失败: {e}")
 
     def _load_project_data(self) -> Dict[str, Any]:
         """加载项目数据"""

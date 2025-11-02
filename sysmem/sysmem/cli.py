@@ -20,6 +20,7 @@ try:
     from analyze_architecture import ArchitectureAnalyzer
     from update_claude_md import ClaudeMdUpdater
     from system_monitor import SystemMonitor
+    from problem_analyzer import ProblemAnalyzer
     from utils import SysmemUtils
 except ImportError as e:
     click.echo(f"❌ 导入模块失败: {e}", err=True)
@@ -194,20 +195,28 @@ def version():
 @click.argument('directory', default='.')
 @click.option('--modules', nargs='+', help='指定要分析的模块')
 @click.option('--output', '-o', help='输出报告文件路径')
-@click.option('--ai-prompt', action='store_true', help='生成AI分析提示')
+@click.option('--ai-prompt', is_flag=True, help='生成AI分析提示')
 @click.option('--confidence', type=float, default=0.6, help='置信度阈值')
 @click.option('--max-results', type=int, default=20, help='最大结果数量')
-def analyze_unused(directory, modules, output, ai_prompt, confidence, max_results):
-    """分析未使用的代码"""
+@click.option('--simple', is_flag=True, help='使用简单函数分析器')
+def analyze_unused(directory, modules, output, ai_prompt, confidence, max_results, simple):
+    """分析未使用的函数"""
     try:
-        # 导入未使用代码分析器
+        # 导入函数分析器
         sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
-        from unused_code_analyzer import UnusedCodeAnalyzer
 
-        analyzer = UnusedCodeAnalyzer(directory)
-
-        click.echo("🚀 开始未使用代码分析...")
-        report = analyzer.scan_project(modules)
+        if simple:
+            from simple_function_analyzer import SimpleFunctionAnalyzer as Analyzer
+            analyzer = Analyzer(directory)
+            click.echo("🚀 开始简单函数级别分析...")
+            report = analyzer.analyze_functions(modules)
+            analysis_type = "简单函数级别"
+        else:
+            from unused_code_analyzer import UnusedCodeAnalyzer as Analyzer
+            analyzer = Analyzer(directory)
+            click.echo("🚀 开始未使用代码分析...")
+            report = analyzer.scan_project(modules)
+            analysis_type = "静态代码"
 
         # 过滤结果
         filtered_unused = [
@@ -233,17 +242,17 @@ def analyze_unused(directory, modules, output, ai_prompt, confidence, max_result
 
             # 显示简要信息
             click.echo("\n" + "="*50)
-            click.echo("📊 分析结果摘要")
+            click.echo(f"📊 {analysis_type}分析结果摘要")
             click.echo("="*50)
             click.echo(f"发现 {len(filtered_unused)} 个高置信度未使用的函数")
             click.echo(f"AI分析提示已生成，可提交给AI进行深度分析")
             click.echo("="*50)
         else:
-            click.echo(f"\n📊 分析完成，发现 {len(filtered_unused)} 个未使用的函数")
+            click.echo(f"\n📊 {analysis_type}分析完成，发现 {len(filtered_unused)} 个未使用的函数")
             click.echo(f"详细报告: {output_file}")
 
     except Exception as e:
-        click.echo(f"❌ 未使用代码分析失败: {e}", err=True)
+        click.echo(f"❌ {analysis_type}分析失败: {e}", err=True)
         sys.exit(1)
 
 
@@ -284,9 +293,63 @@ def status():
         click.echo(f"❌ 状态检查失败: {e}", err=True)
 
 
+@cli.command()
+@click.argument('query')
+@click.argument('directory', default='.')
+@click.option('--output', '-o', help='分析报告输出路径')
+def problem(query, directory, output):
+    """分析项目问题（ABC三方案分析流程）"""
+    try:
+        analyzer = ProblemAnalyzer(directory)
+        click.echo(f"🔍 开始分析问题: {query}")
+        click.echo(f"📁 目标目录: {directory}")
+        click.echo()
+
+        result = analyzer.analyze_problem(query)
+
+        if output and result.get("status") == "analysis_completed":
+            # 保存详细分析报告
+            report = {
+                "query": query,
+                "directory": directory,
+                "status": result["status"],
+                "analysis_timestamp": result.get("analysis_summary", {}).get("analysis_timestamp"),
+                "problem_type": result.get("analysis_summary", {}).get("problem_type"),
+                "related_modules": result.get("analysis_summary", {}).get("related_modules", []),
+                "evidence_summary": result.get("analysis_summary", {}).get("evidence_summary", {}),
+                "selected_option": result.get("selected_option"),
+                "context": result.get("context"),
+                "evidence": result.get("evidence")
+            }
+
+            with open(output, 'w', encoding='utf-8') as f:
+                json.dump(report, f, indent=2, ensure_ascii=False)
+            click.echo(f"✅ 分析报告已保存到: {output}")
+
+        # 显示简要结果
+        if result["status"] == "analysis_completed":
+            click.echo("✅ 问题分析完成!")
+            if result.get("selected_option"):
+                selected = result["selected_option"]
+                click.echo(f"🎯 选定方案: {selected['title']}")
+                click.echo(f"📝 方法: {selected['method']}")
+                click.echo(f"📊 工作量: {selected['effort']}")
+                click.echo(f"⚠️ 风险: {selected['risk']}")
+        elif result["status"] == "interrupted":
+            click.echo("⚠️ 分析被用户中断")
+        elif result["status"] == "error":
+            click.echo(f"❌ 分析失败: {result.get('message', '未知错误')}")
+
+    except Exception as e:
+        click.echo(f"❌ 分析过程中出现错误: {e}", err=True)
+        sys.exit(1)
+
+
 def main():
     """主入口函数"""
-    cli()
+
+
+cli()
 
 
 if __name__ == '__main__':

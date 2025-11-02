@@ -106,22 +106,30 @@ def main():
         print("📊 分析结果")
         print("=" * 40)
 
-        if result["status"] == "cancelled":
-            print("❌ 分析被用户取消")
-        elif result["final_status"] == "success":
-            print("✅ 问题解决成功!")
-            if "test_results" in result:
-                for test in result["test_results"]:
-                    if test.get("success"):
-                        print("✅ 测试通过")
-        elif result["final_status"] == "success_after_retry":
-            print("✅ 问题解决成功 (经过修复)")
-            if "fixes_applied" in result:
-                print(f"应用的修复: {', '.join(result['fixes_applied'])}")
+        if result["status"] == "interrupted":
+            print("❌ 分析被用户中断")
+        elif result["status"] == "analysis_completed":
+            print("✅ 问题分析完成!")
+            if result.get("selected_option"):
+                print(f"🎯 选定方案: {result['selected_option']['title']}")
+                print(f"📝 方法: {result['selected_option']['method']}")
+                print(f"⏱️ 预估时间: {result['selected_option'].get('estimated_time', '未知')}")
+                print(f"📊 工作量: {result['selected_option']['effort']}")
+                print(f"⚠️ 风险等级: {result['selected_option']['risk']}")
+                print("\n💡 下一步操作建议:")
+                print("1. 根据选定的方案制定详细的实施计划")
+                print("2. 准备相关的开发环境和工具")
+                print("3. 按照方案步骤逐步实施修复")
+                print("4. 在实施过程中持续监控和验证")
+            else:
+                print("📋 分析完成，用户未选择具体方案")
+                print("💡 建议基于分析报告选择合适的解决方案")
+        elif result["status"] == "error":
+            print("❌ 分析过程出现错误")
+            print(f"错误信息: {result.get('message', '未知错误')}")
         else:
-            print("❌ 问题解决失败")
-            if "error" in result:
-                print(f"错误信息: {result['error']}")
+            print("❌ 分析状态未知")
+            print(f"状态: {result.get('status', '未知')}")
 
     except KeyboardInterrupt:
         print("\n\n⚠️ 用户中断分析")

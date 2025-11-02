@@ -2,15 +2,28 @@
 
 ## 🚀 概述
 
-Sysmem是一个全面的自动化项目架构管理系统，提供智能项目扫描、增量数据收集、静态代码分析和自动化文档更新功能。通过智能变更检测、AI辅助代码分析和交互式安装管理，确保项目架构的一致性、完整性和高性能。
+Sysmem是一个全面的自动化项目架构管理系统，提供**智能交互式更新**、Git集成文件变更检测、增量数据收集、静态代码分析和自动化文档更新功能。通过智能变更检测、用户确认的精确控制和AI辅助代码分析，确保项目架构的一致性、完整性和高性能。
 
 ## ✨ 核心特性
+
+### 🤖 智能交互式更新（全新功能）
+- **📊 Git集成检测**：自动检测git仓库中的文件变更，精确识别影响范围
+- **⏰ 文件时间检测**：当git不可用时，基于文件修改时间检测变更
+- **💬 用户交互确认**：清晰的变更报告，用户自主决定更新范围
+- **🎯 精确模块化更新**：避免不必要的全面扫描，只更新用户确认的模块
+- **🧠 智能策略推荐**：根据变更类型自动推荐全面更新或选择性更新
 
 ### 🔍 智能项目管理
 - **🎯 增量数据收集**：智能检测项目变更，增量更新数据，性能提升88%
 - **🤖 智能触发机制**：基于变更级别(LOW/MEDIUM/HIGH)自动判断是否需要收集
 - **📊 实时变更检测**：文件变更实时响应，避免不必要的全量扫描
 - **📈 性能监控**：详细的数据收集统计和性能分析
+
+### 🧹 智能数据清理（全新功能）
+- **📋 .gitignore解析**：自动读取和解析项目忽略规则
+- **🗑️ 智能数据清理**：从已收集数据中移除被忽略的文件和目录
+- **🔄 增量清理机制**：支持.gitignore规则更新后的智能清理
+- **📊 清理报告**：详细的清理统计和影响分析报告
 
 ### 🔬 静态代码分析
 - **🎯 未使用代码检测**：智能扫描未调用的函数和废弃代码
@@ -93,19 +106,50 @@ sysmem/
 
 ### 📦 安装方式
 
-#### 方式1: 使用自动安装脚本（推荐）
+#### 🌟 方式1: 一键智能安装（强烈推荐）
+
+**Linux/macOS:**
 ```bash
 # 下载项目到本地
 git clone https://github.com/your-repo/sysmem.git
 cd sysmem
 
-# 运行自动生成的安装脚本
+# 一键安装（自动检测环境并安装）
+./quick_install.sh
+```
+
+**Windows:**
+```cmd
+# 下载项目到本地
+git clone https://github.com/your-repo/sysmem.git
+cd sysmem
+
+# 一键安装
+quick_install.bat
+```
+
+**一键安装特性：**
+- ✅ 智能检测系统环境（Python、pip、Git）
+- ✅ 自动检查项目变更状态
+- ✅ 智能备份现有安装
+- ✅ 自动同步代码到安装目录
+- ✅ 验证安装结果
+- ✅ 生成启动脚本和PATH配置
+- ✅ 提供完整的使用指南
+
+#### 方式2: 使用智能安装脚本
+```bash
+# 下载项目到本地
+git clone https://github.com/your-repo/sysmem.git
+cd sysmem
+
+# 运行智能安装脚本（展示v2.0功能）
 python3 scripts/install_project.py
 
 # 根据提示选择合适的安装命令
 ```
 
-#### 方式2: 使用Makefile
+#### 方式3: 使用Makefile
 ```bash
 # 用户模式安装
 make install
@@ -117,7 +161,7 @@ make install-dev
 make global-install
 ```
 
-#### 方式3: 使用pip直接安装
+#### 方式4: 使用pip直接安装
 ```bash
 # 用户模式安装
 python3 -m pip install -e .
@@ -141,11 +185,78 @@ sysmem status
 
 ## 📖 核心功能使用
 
+### 🤖 智能交互式更新（全新功能）
+
+#### 推荐使用方式
+```bash
+# 智能交互式更新 - 自动检测文件变更并询问更新范围
+python3 scripts/collect_data.py --interactive
+python3 scripts/collect_data.py -i
+```
+
+#### 交互流程示例
+```bash
+🤖 智能更新建议
+============================================================
+📋 变更摘要:
+  • 检测到 15 个文件变更
+  • 检测到 2 个关键文件变更
+  • 影响 2 个模块: scripts, examples
+
+💡 系统建议:
+  • 重点关注模块: scripts
+
+🎯 推荐行动: 选择性更新
+   受影响模块: scripts, examples
+
+可更新的受影响模块:
+  1. scripts
+  2. examples
+
+请选择更新方式:
+  1. 更新所有受影响模块 (scripts, examples)
+  2. 选择特定模块
+  3. 全面更新所有模块
+  4. 取消更新
+```
+
+### 🧹 智能数据清理（全新功能）
+
+#### 推荐使用方式
+```bash
+# 智能数据清理 - 清理被.gitignore标记的过时数据
+python3 scripts/collect_data.py --clean
+python3 scripts/collect_data.py -c
+
+# 完全清理并重新收集
+python3 scripts/collect_data.py --full-clean
+
+# 生成忽略规则报告
+python3 scripts/collect_data.py --ignore-report
+```
+
+#### 清理流程示例
+```bash
+🧹 模式: 清理被.gitignore标记的数据
+📖 已加载现有数据文件: /path/to/project/.claude/skill/sysmem/project_data.json
+📋 忽略规则已更新: 70 → 78 条规则
+🧹 清理被忽略的文件数据...
+   🗑️  移除文件: scripts/simple_function_analyzer.py
+   🗑️  移除文件: scripts/problem_analyzer.py
+✅ 数据清理完成: 移除了 2 个被忽略的项目
+```
+
+#### 应用场景
+- **项目结构调整后**：当模块被废弃或重构时，清理相关数据
+- **.gitignore规则更新**：当添加新的忽略规则时，自动清理对应数据
+- **数据存储优化**：定期清理不再关心的文件数据，节省存储空间
+- **数据一致性维护**：确保收集的数据与当前项目状态保持一致
+
 ### 🔄 智能增量数据收集
 
 #### 基础使用
 ```bash
-# 智能增量收集（推荐）
+# 智能增量收集（传统方式）
 python3 scripts/collect_data.py /path/to/project --smart
 
 # 检查项目变更状态
@@ -220,6 +331,11 @@ sysmem --help
 
 # 数据收集
 sysmem-collect /path/to/project --smart
+
+# 智能数据清理
+sysmem-clean /path/to/project
+sysmem-clean --full-clean /path/to/project
+sysmem-clean --report /path/to/project
 
 # 项目扫描
 sysmem-scan /path/to/project
@@ -578,6 +694,12 @@ config = {
   - 智能触发系统，基于变更级别(LOW/MEDIUM/HIGH)自动判断
   - 性能优化88%，全量收集从0.52秒降至0.06秒
   - 实时变更检测，避免不必要的全量扫描
+
+- 🧹 **智能数据清理系统**:
+  - 自动解析.gitignore文件，智能识别需要忽略的文件和目录
+  - 从已收集数据中精确移除被忽略项目，保持数据一致性
+  - 支持增量清理和完全清理两种模式
+  - 生成详细的清理报告，移除2个被忽略的项目
 
 - 🔬 **静态代码分析+AI分析**:
   - 未使用代码检测，智能扫描未调用的函数

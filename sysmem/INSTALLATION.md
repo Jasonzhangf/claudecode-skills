@@ -1,21 +1,34 @@
-# Sysmem 安装和使用指南
+# Sysmem 安装和使用指南 v2.0
 
 ## 🚀 概述
 
-Sysmem现在支持完整的Python包管理，包括增量数据收集、交互式编译安装提示和静态代码分析功能。
+Sysmem v2.0 现在支持**智能交互式更新**、Git集成文件变更检测、智能数据清理、完整的Python包管理，包括增量数据收集、交互式编译安装提示和静态代码分析功能。
 
 ## 📦 安装方式
 
-### 1. 检查变更并获取安装提示
+### 1. 🌟 智能安装检查（推荐）
 
 ```bash
-# 检查项目是否需要重新安装
-python3 scripts/auto_install.py --check
-
-# 如果检测到变更，系统会提示可用的安装命令
+# 运行智能安装脚本 - 自动检测项目变更并展示新功能
+python3 scripts/install_project.py
 ```
 
-### 2. 使用Makefile安装（推荐）
+**安装脚本特性：**
+- ✅ 自动检测项目变更（Git/文件时间）
+- ✅ 展示v2.0新功能和使用方式
+- ✅ 集成智能数据清理功能演示
+- ✅ 智能推荐安装命令
+- ✅ 生成快速开始指南
+- ✅ 导出安装信息到 `.claude/install_info.json`
+
+### 2. 传统安装检查
+
+```bash
+# 检查项目是否需要重新安装（传统方式）
+python3 scripts/auto_install.py --check
+```
+
+### 3. 使用Makefile安装（推荐）
 
 ```bash
 # 用户模式安装
@@ -28,7 +41,7 @@ make install-dev
 make global-install
 ```
 
-### 3. 使用pip直接安装
+### 4. 使用pip直接安装
 
 ```bash
 # 用户模式安装
@@ -41,7 +54,7 @@ sudo python3 -m pip install .
 python3 -m pip install -e ".[dev]"
 ```
 
-### 4. 构建分发包
+### 5. 构建分发包
 
 ```bash
 # 构建分发包
@@ -51,7 +64,71 @@ make build
 make release
 ```
 
-## 🔧 增量数据收集系统
+## 🤖 智能交互式更新系统（v2.0全新功能）
+
+### 🌟 核心特性
+- 📊 **Git集成检测**：自动检测git仓库中的文件变更
+- ⏰ **文件时间检测**：git不可用时，基于文件修改时间检测
+- 💬 **用户交互确认**：清晰的变更报告，用户自主决定更新范围
+- 🎯 **精确模块化更新**：避免不必要的全面扫描
+- 🧠 **智能策略推荐**：根据变更类型自动推荐更新策略
+
+### 🚀 推荐使用方式
+
+```bash
+# 智能交互式更新（推荐）
+python3 scripts/collect_data.py --interactive
+python3 scripts/collect_data.py -i
+```
+
+### 📋 交互流程示例
+
+```bash
+🤖 智能更新建议
+============================================================
+📋 变更摘要:
+  • 检测到 15 个文件变更
+  • 检测到 2 个关键文件变更
+  • 影响 2 个模块: scripts, examples
+
+💡 系统建议:
+  • 重点关注模块: scripts
+
+🎯 推荐行动: 选择性更新
+   受影响模块: scripts, examples
+
+可更新的受影响模块:
+  1. scripts
+  2. examples
+
+请选择更新方式:
+  1. 更新所有受影响模块 (scripts, examples)
+  2. 选择特定模块
+  3. 全面更新所有模块
+  4. 取消更新
+```
+
+### 🎯 其他更新方式
+
+```bash
+# 列出可用模块
+python3 scripts/collect_data.py --list-modules
+
+# 精确更新单个模块
+python3 scripts/collect_data.py --module scripts
+python3 scripts/collect_data.py -m examples
+
+# 查看完整帮助
+python3 scripts/collect_data.py --help
+
+# 强制全面更新
+python3 scripts/collect_data.py --full-scan
+
+# 重新扫描（.gitignore更新后）
+python3 scripts/collect_data.py --rescan
+```
+
+## 🔧 传统增量数据收集系统
 
 ### 特性
 - 🎯 **智能触发**：基于文件变更自动判断是否需要收集
@@ -62,7 +139,7 @@ make release
 ### 使用方式
 
 ```bash
-# 智能增量收集（推荐）
+# 智能增量收集（传统方式）
 python3 scripts/collect_data.py /path/to/project --smart
 
 # 检查项目变更状态

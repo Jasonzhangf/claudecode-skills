@@ -1,0 +1,34 @@
+# 测试忽略规则 - 用于清理功能测试
+
+# 忽略一些临时和测试文件
+temp_files/
+test_output/
+*.log
+*.tmp
+debug_*
+
+# 忽略特定的脚本文件用于测试
+scripts/simple_function_analyzer.py
+scripts/test_*
+scripts/problem_analyzer.py
+
+# 忽略特定的目录
+references/temp/
+examples/test_usage/
+
+# Python忽略规则
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+
+# 编辑器和系统文件
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
